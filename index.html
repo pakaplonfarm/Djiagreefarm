@@ -1,0 +1,2548 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DJI Agras Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brand:#16a34a;--brand-light:#dcfce7;--brand-mid:#bbf7d0;--brand-deep:#15803d;
+  --accent:#2563eb;--accent-light:#dbeafe;
+  --warn:#d97706;--warn-light:#fef3c7;
+  --danger:#dc2626;--danger-light:#fee2e2;
+  --bg:#f8fafc;--surface:#ffffff;--surface2:#f1f5f9;--surface3:#e2e8f0;
+  --border:#e2e8f0;--border-focus:#16a34a;
+  --text:#0f172a;--text2:#475569;--text3:#94a3b8;--text4:#cbd5e1;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow:0 4px 16px rgba(0,0,0,.08),0 2px 6px rgba(0,0,0,.04);
+  --shadow-lg:0 12px 40px rgba(0,0,0,.12),0 4px 12px rgba(0,0,0,.06);
+  --r:12px;--r-sm:8px;--mono:'IBM Plex Mono',monospace;--ff:'Sarabun',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--ff);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+
+/* NAV */
+.nav{background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;padding:0 20px}
+.nav-inner{max-width:1000px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:56px;gap:12px}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-logo{width:32px;height:32px;background:var(--brand);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.nav-logo svg{width:18px;height:18px}
+.nav-title{font-weight:800;font-size:15px;color:var(--text)}
+.nav-sub{font-size:11px;color:var(--text3)}
+.nav-tabs{display:flex;gap:2px;background:var(--surface2);border-radius:9px;padding:3px}
+.nav-tab{padding:6px 14px;border:none;background:transparent;cursor:pointer;font-family:var(--ff);font-size:12px;font-weight:600;color:var(--text2);border-radius:7px;transition:all .2s;white-space:nowrap}
+.nav-tab.active{background:var(--surface);color:var(--brand);box-shadow:var(--shadow-sm)}
+.nav-tab:hover:not(.active){color:var(--text)}
+
+/* LAYOUT */
+.page{display:none;max-width:1000px;margin:0 auto;padding:20px 16px 80px}
+.page.active{display:block;animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* PAGE HEADER */
+.page-head{margin-bottom:20px}
+.page-head h2{font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.02em;margin-bottom:4px}
+.page-head p{font-size:13px;color:var(--text2)}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--shadow-sm)}
+.card+.card{margin-top:12px}
+.card-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card-title .icon{width:28px;height:28px;background:var(--brand-light);color:var(--brand-deep);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* MODEL GRID */
+.model-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px}
+.model-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--r);padding:10px 6px;cursor:pointer;text-align:center;transition:all .18s ease;position:relative}
+.model-card:hover{border-color:var(--brand);transform:translateY(-2px);box-shadow:var(--shadow)}
+.model-card.active{border-color:var(--brand);background:var(--brand-light);box-shadow:0 0 0 4px rgba(22,163,74,.12)}
+.model-card .drone-ico{width:40px;height:40px;margin:0 auto 4px;display:block}
+.model-card .m-name{font-size:12px;font-weight:700;color:var(--text)}
+.model-card.active .m-name{color:var(--brand-deep)}
+.model-card .m-cap{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:1px}
+.model-card .m-badge{position:absolute;top:4px;right:4px;font-size:8px;font-weight:700;padding:1px 5px;border-radius:4px}
+.model-card .m-badge.new{background:#dbeafe;color:#1d4ed8}
+.model-card .m-badge.th{background:#fef3c7;color:#92400e}
+
+/* SPEC BAR */
+.spec-bar{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;background:var(--surface2);border-radius:var(--r);padding:14px;margin-bottom:12px;border:1px solid var(--border)}
+.spec-item{text-align:center}
+.spec-val{font-family:var(--mono);font-size:16px;font-weight:600;color:var(--brand-deep);line-height:1;margin-bottom:2px}
+.spec-unit{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+.spec-lbl{font-size:9px;color:var(--text2);font-weight:500;margin-top:1px}
+
+/* UNIT BADGE */
+.unit-pill{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:100px;font-size:12px;font-weight:600;margin-bottom:14px;font-family:var(--mono)}
+.unit-pill.new-sys{background:var(--accent-light);color:var(--accent)}
+.unit-pill.old-sys{background:var(--warn-light);color:var(--warn)}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid.cols3{grid-template-columns:1fr 1fr 1fr}
+.form-grid.cols1{grid-template-columns:1fr}
+.field{display:flex;flex-direction:column;gap:5px}
+.field.span2{grid-column:span 2}
+.field label{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.04em;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+.field label .lbl-unit{font-family:var(--mono);font-size:9px;font-weight:500;background:var(--surface2);color:var(--text3);padding:1px 6px;border-radius:4px;border:1px solid var(--border);text-transform:none}
+.field input,.field select{background:var(--surface);border:1.5px solid var(--border);color:var(--text);font-family:var(--ff);font-size:14px;font-weight:500;padding:9px 12px;border-radius:var(--r-sm);outline:none;transition:border-color .15s,box-shadow .15s;width:100%}
+.field input:focus,.field select:focus{border-color:var(--border-focus);box-shadow:0 0 0 3px rgba(22,163,74,.12)}
+.field input::placeholder{color:var(--text4)}
+.field .hint{font-size:11px;color:var(--text3);margin-top:3px;display:flex;align-items:flex-start;gap:5px}
+.field .hint.warn{color:var(--warn)}
+.field .hint.ok{color:var(--brand)}
+
+/* TOGGLE GROUP */
+.tog-group{display:flex;gap:6px;margin-bottom:14px}
+.tog-btn{flex:1;padding:8px 10px;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-family:var(--ff);font-size:12px;font-weight:600;border-radius:var(--r-sm);cursor:pointer;transition:all .18s;text-align:center}
+.tog-btn:hover{border-color:var(--brand);color:var(--brand)}
+.tog-btn.active{background:var(--brand-light);border-color:var(--brand);color:var(--brand-deep)}
+
+/* RECO BOX */
+.reco-panel{background:linear-gradient(135deg,var(--brand-light) 0%,#f0fdf4 100%);border:1.5px solid var(--brand-mid);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.reco-panel h4{font-size:11px;font-weight:700;color:var(--brand-deep);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.reco-grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.reco-item{background:rgba(255,255,255,.7);border-radius:var(--r-sm);padding:9px;text-align:center;border:1px solid var(--brand-mid)}
+.reco-num{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--brand-deep);line-height:1}
+.reco-label{font-size:9px;color:var(--text2);margin-top:2px;text-transform:uppercase;letter-spacing:.04em}
+.reco-note{font-size:11px;color:var(--text2);padding:8px 10px;background:rgba(255,255,255,.6);border-radius:6px;line-height:1.5}
+.fert-box{margin-top:8px;padding:8px 10px;background:rgba(255,214,0,.12);border:1px solid rgba(212,170,0,.3);border-radius:6px;font-size:11px;color:#713f12;line-height:1.5}
+.fert-box strong{color:#92400e}
+
+/* LABEL CONVERTER - key feature */
+.converter-section{background:linear-gradient(135deg,#eff6ff 0%,#f8faff 100%);border:1.5px solid #bfdbfe;border-radius:var(--r);padding:16px;margin-bottom:12px}
+.converter-section h4{font-size:11px;font-weight:700;color:#1d4ed8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.conv-mode-tabs{display:flex;gap:6px;margin-bottom:14px}
+.conv-tab{padding:6px 12px;border:1.5px solid #bfdbfe;background:rgba(255,255,255,.7);color:#3b82f6;font-family:var(--ff);font-size:11px;font-weight:600;border-radius:6px;cursor:pointer}
+.conv-tab.active{background:#2563eb;color:white;border-color:#2563eb}
+.conv-result{background:white;border:1.5px solid var(--brand);border-radius:var(--r-sm);padding:12px;margin-top:12px}
+.conv-result-title{font-size:10px;font-weight:700;color:var(--brand-deep);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.conv-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)}
+.conv-row:last-child{border-bottom:none}
+.conv-key{font-size:12px;color:var(--text2)}
+.conv-val{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--brand-deep)}
+.conv-val.big{font-size:18px;color:var(--brand)}
+.conv-copy-hint{font-size:11px;color:var(--text3);margin-top:8px;display:flex;align-items:center;gap:5px}
+
+/* CALC BTN */
+.calc-btn{width:100%;padding:14px;border:none;cursor:pointer;background:var(--brand);color:white;font-family:var(--ff);font-size:15px;font-weight:700;border-radius:var(--r-sm);transition:all .18s;box-shadow:0 4px 12px rgba(22,163,74,.3);display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px}
+.calc-btn:hover{background:var(--brand-deep);transform:translateY(-1px);box-shadow:0 6px 18px rgba(22,163,74,.4)}
+.calc-btn:active{transform:translateY(0)}
+
+/* RESULT */
+.result-area{margin-top:16px}
+.result-header{background:linear-gradient(135deg,var(--brand) 0%,var(--brand-deep) 100%);color:white;border-radius:var(--r);padding:18px;margin-bottom:12px;position:relative;overflow:hidden}
+.result-header::before{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;background:rgba(255,255,255,.08);border-radius:50%}
+.result-header h3{font-size:16px;font-weight:800;margin-bottom:4px}
+.result-header .rsub{font-size:12px;opacity:.8}
+.r4grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.rcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;box-shadow:var(--shadow-sm)}
+.rcard .rlbl{font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.rcard .rnum{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--text);line-height:1}
+.rcard .runit{font-size:11px;color:var(--text2);margin-top:3px}
+.rcard.green{border-top:3px solid var(--brand)}
+.rcard.blue{border-top:3px solid var(--accent)}
+.rcard.amber{border-top:3px solid var(--warn)}
+.rcard.red{border-top:3px solid var(--danger)}
+
+/* SETTING PANEL */
+.settings-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;box-shadow:var(--shadow-sm)}
+.settings-panel h4{font-size:11px;font-weight:700;color:var(--warn);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;font-family:var(--mono)}
+.srow{display:flex;align-items:baseline;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--surface2);font-size:12px;flex-wrap:wrap;gap:6px}
+.srow:last-child{border-bottom:none;padding-bottom:0}
+.srow .sk{color:var(--text2);font-weight:500;flex:1;min-width:130px}
+.srow .sv{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--brand-deep)}
+.srow .sv.blue{color:var(--accent)}
+.srow .sv.amber{color:var(--warn)}
+.srow .sv.red{color:var(--danger)}
+
+/* CHEM TABLE */
+.chem-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:12px;box-shadow:var(--shadow-sm)}
+.chem-head{background:var(--surface2);padding:10px 14px;font-size:11px;font-weight:700;color:var(--text2);display:grid;grid-template-columns:40px 1fr 1fr 1fr;gap:0;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.05em}
+.chem-row{display:grid;grid-template-columns:40px 1fr 1fr 1fr;gap:0;padding:10px 14px;border-bottom:1px solid var(--surface2);font-size:12px;align-items:center}
+.chem-row:last-child{border-bottom:none}
+.chem-row:hover{background:var(--surface2)}
+.chem-row .cn{font-family:var(--mono);font-weight:700;color:var(--brand)}
+
+/* TIPS */
+.tips-box{background:#f0f9ff;border:1px solid #bae6fd;border-radius:var(--r-sm);padding:14px;margin-bottom:10px}
+.tips-box h4{font-size:11px;font-weight:700;color:#0369a1;text-transform:uppercase;letter-spacing:.05em;margin-bottom:9px}
+.tip{display:flex;gap:8px;padding:4px 0;font-size:11px;color:var(--text2);border-bottom:1px solid rgba(186,230,253,.5)}
+.tip:last-child{border-bottom:none}
+.tip::before{content:'›';color:#0ea5e9;font-weight:700;flex-shrink:0;margin-top:1px}
+
+/* WBOX */
+.wbox{background:var(--warn-light);border:1px solid #fcd34d;border-radius:var(--r-sm);padding:10px 12px;font-size:11px;color:#78350f;margin-bottom:10px;display:flex;gap:8px;align-items:flex-start}
+.wbox svg{flex-shrink:0;margin-top:1px;color:var(--warn)}
+
+/* SPREAD */
+.bag-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:var(--warn-light);border:1px solid #fcd34d;border-radius:100px;font-size:11px;font-weight:700;color:#78350f;margin-bottom:12px;font-family:var(--mono)}
+
+/* LIVE FLIGHT ROUND */
+.live-round{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:12px;margin-bottom:8px;transition:all .2s}
+.live-round.active{border-color:var(--accent);background:#eff6ff}
+.live-round.done{border-color:var(--brand);background:#f0fdf4}
+.live-round.headland-mode{border-left:4px solid var(--warn)}
+.live-round.mainfield-mode{border-left:4px solid var(--brand)}
+.lr-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.lr-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;color:white}
+.lr-num.active{background:var(--accent)}
+.lr-num.done{background:var(--brand)}
+.lr-num.pending{background:var(--text3)}
+.lr-title{font-size:13px;font-weight:700;color:var(--text);flex:1}
+.lr-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:100px}
+.lr-badge.hl{background:var(--warn-light);color:var(--warn)}
+.lr-badge.mf{background:var(--brand-light);color:var(--brand-deep)}
+.lr-badge.done-b{background:var(--brand-light);color:var(--brand-deep)}
+.lr-inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
+.lr-result{background:var(--surface2);border-radius:6px;padding:10px;display:none}
+.lr-result.show{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.lr-rv{font-family:var(--mono);font-size:15px;font-weight:700}
+.lr-rl{font-size:9px;color:var(--text3);margin-top:2px;text-transform:uppercase}
+.rpm-reco-inline{background:linear-gradient(135deg,#fef3c7,#fde68a20);border:1px solid #fcd34d;border-radius:6px;padding:8px 10px;font-size:11px;color:#78350f;margin-top:6px}
+/* RPM CALCULATOR */
+.rpm-result-card{background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);border-radius:var(--r);padding:20px;margin-bottom:12px;color:white;position:relative;overflow:hidden}
+.rpm-result-card::before{content:"";position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(22,163,74,.2) 0%,transparent 70%)}
+.rpm-zone{border-radius:var(--r-sm);padding:16px;margin-bottom:10px;border:2px solid transparent}
+.rpm-zone.main-field{background:linear-gradient(135deg,#f0fdf4 0%,#dcfce7 100%);border-color:var(--brand-mid)}
+.rpm-zone.headland{background:linear-gradient(135deg,#fef3c7 0%,#fde68a 20%);border-color:#fcd34d}
+.rpm-zone.wind-adj{background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 100%);border-color:#93c5fd}
+.rpm-zone h4{font-size:12px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.rpm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px}
+.rpm-val-box{background:rgba(255,255,255,.7);border-radius:8px;padding:10px;text-align:center;border:1px solid rgba(0,0,0,.06)}
+.rpm-big{font-family:var(--mono);font-size:22px;font-weight:800;line-height:1}
+.rpm-lbl{font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-top:3px}
+.rpm-note{font-size:11px;color:var(--text2);line-height:1.5;padding:8px 10px;background:rgba(255,255,255,.5);border-radius:6px}
+.formula-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:11px;color:var(--text2);margin-top:8px}
+.formula-box code{font-family:var(--mono);font-size:11px;color:var(--brand-deep);background:var(--brand-light);padding:1px 5px;border-radius:3px}
+.material-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:600;margin-bottom:10px}
+.uniformity-bar{height:12px;border-radius:100px;overflow:hidden;background:var(--surface2);margin-top:6px}
+.uniformity-fill{height:100%;border-radius:100px;transition:width .5s ease}
+/* FLIGHT LOG */
+.log-setup{background:linear-gradient(135deg,#f0fdf4 0%,#f8fafc 100%);border:1.5px solid var(--brand-mid);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.log-setup h3{font-size:13px;font-weight:700;color:var(--brand-deep);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.round-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px;transition:all .2s}
+.round-card:hover{border-color:var(--brand);box-shadow:var(--shadow)}
+.round-card.done{border-color:var(--brand);background:#f0fdf4}
+.round-card.active-round{border-color:var(--accent);background:#eff6ff;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.round-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.round-num{width:32px;height:32px;background:var(--brand);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0}
+.round-num.done-num{background:var(--brand-deep)}
+.round-num.active-num{background:var(--accent)}
+.round-title{font-size:13px;font-weight:700;color:var(--text);margin-left:10px;flex:1}
+.round-status{font-size:11px;font-weight:600;padding:3px 10px;border-radius:100px}
+.round-status.pending{background:var(--surface2);color:var(--text3)}
+.round-status.flying{background:#dbeafe;color:#1d4ed8}
+.round-status.done-s{background:var(--brand-light);color:var(--brand-deep)}
+.round-inputs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.round-result{margin-top:10px;padding:10px;background:var(--surface2);border-radius:var(--r-sm);display:none}
+.round-result.show{display:block}
+.rr-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center}
+.rr-val{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--brand-deep)}
+.rr-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+.summary-card{background:linear-gradient(135deg,var(--brand) 0%,var(--brand-deep) 100%);color:white;border-radius:var(--r);padding:18px;margin-bottom:12px}
+.summary-card h3{font-size:15px;font-weight:800;margin-bottom:12px}
+.sum-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.sum-item{text-align:center;background:rgba(255,255,255,.15);border-radius:8px;padding:10px}
+.sum-num{font-family:var(--mono);font-size:20px;font-weight:700;line-height:1}
+.sum-lbl{font-size:10px;opacity:.8;margin-top:3px;text-transform:uppercase;letter-spacing:.04em}
+.compare-bar{margin-top:12px;background:rgba(255,255,255,.15);border-radius:8px;padding:10px 12px}
+.compare-bar .cb-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.1)}
+.compare-bar .cb-row:last-child{border-bottom:none}
+.compare-bar .cb-key{opacity:.8}
+.compare-bar .cb-val{font-family:var(--mono);font-weight:700}
+.compare-bar .cb-val.good{color:#86efac}
+.compare-bar .cb-val.warn{color:#fde68a}
+.add-round-btn{width:100%;padding:12px;border:2px dashed var(--brand);background:transparent;color:var(--brand);font-family:var(--ff);font-size:13px;font-weight:700;border-radius:var(--r-sm);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px}
+.add-round-btn:hover{background:var(--brand-light)}
+.del-round-btn{padding:6px 10px;border:1px solid var(--danger-light);background:var(--danger-light);color:var(--danger);border-radius:6px;font-size:11px;cursor:pointer;font-family:var(--ff);font-weight:600}
+.del-round-btn:hover{background:var(--danger);color:white}
+/* WIND INDICATOR */
+.wind-indicator{border-radius:var(--r-sm);padding:12px 14px;margin-top:10px;display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600;transition:all .3s}
+.wind-indicator.calm{background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d}
+.wind-indicator.normal{background:#fef3c7;border:1px solid #fcd34d;color:#92400e}
+.wind-indicator.strong{background:#fee2e2;border:1px solid #fca5a5;color:#dc2626}
+.wind-indicator.stop{background:#dc2626;border:1px solid #b91c1c;color:white}
+.wind-icon{font-size:20px;flex-shrink:0}
+.wind-detail{flex:1}
+.wind-detail .wd-main{font-size:13px;font-weight:700}
+.wind-detail .wd-sub{font-size:11px;margin-top:2px;opacity:.8;font-weight:400}
+.droplet-reco{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;margin-top:8px;font-size:12px}
+.droplet-reco .dr-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.droplet-reco .dr-val{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--brand-deep)}
+.droplet-reco .dr-note{font-size:11px;color:var(--text2);margin-top:3px}
+/* RESET */
+.reset-btn{width:100%;padding:10px;border:1.5px solid var(--border);background:transparent;color:var(--text3);font-family:var(--ff);font-size:12px;font-weight:600;border-radius:var(--r-sm);cursor:pointer;transition:all .18s;text-transform:uppercase;letter-spacing:.04em;margin-top:8px}
+.reset-btn:hover{border-color:var(--danger);color:var(--danger)}
+
+/* PLAN TABLE */
+.plan-table{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:12px}
+.pt-head{background:var(--surface2);display:grid;grid-template-columns:40px 1fr 80px 80px;padding:8px 14px;font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)}
+.pt-row{display:grid;grid-template-columns:40px 1fr 80px 80px;padding:9px 14px;border-bottom:1px solid var(--surface2);font-size:12px;align-items:center}
+.pt-row:last-child{border-bottom:none}
+.pt-row:hover{background:var(--surface2)}
+.pt-n{font-family:var(--mono);font-weight:700;color:var(--brand)}
+
+/* RESPONSIVE */
+@media(max-width:640px){
+  .model-grid{grid-template-columns:repeat(3,1fr)}
+  .spec-bar{grid-template-columns:repeat(3,1fr)}
+  .form-grid,.form-grid.cols3{grid-template-columns:1fr}
+  .field.span2{grid-column:span 1}
+  .r4grid{grid-template-columns:1fr 1fr}
+  .reco-grid4{grid-template-columns:1fr 1fr}
+  .nav-tabs .nav-tab{font-size:11px;padding:5px 8px}
+  .chem-head,.chem-row,.pt-head,.pt-row{grid-template-columns:32px 1fr 1fr}
+  .chem-head>:last-child,.chem-row>:last-child,.pt-head>:last-child,.pt-row>:last-child{display:none}
+}
+@media(max-width:400px){
+  .model-grid{grid-template-columns:repeat(3,1fr)}
+  .nav-title{font-size:13px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-brand">
+      <div class="nav-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div><div class="nav-title">DJI Agras Calculator</div><div class="nav-sub">คำนวณโดรนเกษตร v4.0</div></div>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" data-page="spray">💧 พ่นยา/ปุ๋ย</button>
+      <button class="nav-tab" data-page="label">🏷️ คำนวณยาจากฉลาก</button>
+      <button class="nav-tab" data-page="spread">🌾 หว่าน</button>
+      <button class="nav-tab" data-page="plan">📋 วางแผน</button>
+      <button class="nav-tab" data-page="log">📝 บันทึกบิน</button>
+      <button class="nav-tab" data-page="rpm">🌀 คำนวณ RPM จาน</button>
+    </div>
+  </div>
+</nav>
+
+<!-- MODEL SELECTOR (shared across pages) -->
+<div style="background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px 14px">
+  <div style="max-width:1000px;margin:0 auto">
+    <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">เลือกรุ่นโดรน</div>
+    <div class="model-grid" id="MG"></div>
+    <div class="spec-bar" id="SB">
+      <div class="spec-item"><div class="spec-val" id="sb_tank">—</div><div class="spec-unit">L</div><div class="spec-lbl">ถังพ่น</div></div>
+      <div class="spec-item"><div class="spec-val" id="sb_flow">—</div><div class="spec-unit">L/min</div><div class="spec-lbl">Flow Rate</div></div>
+      <div class="spec-item"><div class="spec-val" id="sb_wid">—</div><div class="spec-unit">m</div><div class="spec-lbl">ความกว้าง</div></div>
+      <div class="spec-item"><div class="spec-val" id="sb_spd">—</div><div class="spec-unit">m/s</div><div class="spec-lbl">ความเร็ว</div></div>
+      <div class="spec-item"><div class="spec-val" id="sb_spr">—</div><div class="spec-unit">kg</div><div class="spec-lbl">ถังหว่าน</div></div>
+      <div class="spec-item"><div class="spec-val" id="sb_eff">—</div><div class="spec-unit">ไร่/ชม.</div><div class="spec-lbl">ประสิทธิภาพ</div></div>
+    </div>
+    <div id="UB" class="unit-pill new-sys">📱 โหลด...</div>
+  </div>
+</div>
+
+<!-- ===== PAGE: SPRAY ===== -->
+<div class="page active" id="page-spray">
+  <div class="page-head"><h2>💧 พ่นยา / ปุ๋ย / ฮอร์โมน</h2><p>คำนวณปริมาณน้ำยา รอบเติมถัง เวลาบิน และค่าตั้งรีโมต</p></div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></span>ข้อมูลแปลงและพืช</div>
+    <div class="form-grid">
+      <div class="field"><label>ขนาดแปลง <span class="lbl-unit">ไร่</span></label><input type="number" id="sa" placeholder="เช่น 50" min="0.1" step="0.5"/></div>
+      <div class="field"><label>ชนิดพืช</label>
+        <select id="scrop" onchange="onCropChange()">
+          <option value="rice">ข้าว</option><option value="sugarcane">อ้อย</option>
+          <option value="corn">ข้าวโพด</option><option value="cassava">มันสำปะหลัง</option>
+          <option value="durian">ทุเรียน</option><option value="longan">ลำไย</option>
+          <option value="rubber">ยางพารา</option><option value="oil_palm">ปาล์มน้ำมัน</option>
+          <option value="other_fruit">ไม้ผลอื่นๆ</option><option value="veg">ผัก/สมุนไพร</option>
+        </select></div>
+      <div class="field"><label>อายุพืช <span class="lbl-unit">วัน (ถ้ามี)</span></label>
+        <input type="number" id="sdays" placeholder="เช่น 45" min="0" step="1" onchange="onDaysChange()"/>
+        <span class="hint" id="days_hint">กรอกอายุเพื่อให้ระบบเลือกระยะให้อัตโนมัติ</span></div>
+      <div class="field"><label>ระยะการเจริญเติบโต</label>
+        <select id="sstage" onchange="onStageChange()"><option value="">— เลือกระยะ —</option></select></div>
+      <div class="field"><label>ประเภทสาร</label>
+        <select id="stype" onchange="onTypeChange()">
+          <optgroup label="🐛 ป้องกันกำจัด">
+            <option value="insect">ยาฆ่าแมลง</option>
+            <option value="fungus">ยาป้องกันเชื้อรา</option>
+            <option value="weed">ยาฆ่าหญ้า</option>
+            <option value="mite">ยาป้องกันไร</option>
+          </optgroup>
+          <optgroup label="🌱 ปุ๋ยและบำรุง">
+            <option value="fert_n">ปุ๋ยน้ำ N สูง (กระตุ้นเจริญ)</option>
+            <option value="fert_p">ปุ๋ยน้ำ P สูง (กระตุ้นดอก/ราก)</option>
+            <option value="fert_k">ปุ๋ยน้ำ K สูง (สะสมอาหาร/ผล)</option>
+            <option value="fert_npk">ปุ๋ยน้ำ NPK สูตรเสมอ</option>
+            <option value="hormone">ฮอร์โมน (ออคซิน/ไซโตไคนิน/GA3)</option>
+            <option value="amino">กรดอะมิโน/สาหร่าย</option>
+            <option value="calcium">แคลเซียม-โบรอน (Ca-B)</option>
+            <option value="micro">ธาตุรองเสริม (Fe/Zn/Mn)</option>
+          </optgroup>
+        </select></div>
+      <div class="field"><label>ราคาสาร <span class="lbl-unit">บาท/ลิตร</span></label>
+        <input type="number" id="sprice" placeholder="(ไม่บังคับ)" min="0"/></div>
+        <div class="field span2"><label>🌬️ ความเร็วลม <span class="lbl-unit">เลือกหน่วยได้</span></label>
+          <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:6px">
+            <input type="number" id="swind_raw" placeholder="เช่น 2.5" min="0" step="0.1"
+              style="width:100%;background:var(--surface);border:1.5px solid var(--border);color:var(--text);font-family:var(--ff);font-size:15px;font-weight:600;padding:10px 14px;border-radius:var(--r-sm);outline:none;box-sizing:border-box"
+              oninput="onSprayWindUnit()"/>
+            <select id="swind_unit" onchange="onSprayWindUnit()"
+              style="background:var(--surface);border:1.5px solid var(--border);color:var(--text);font-family:var(--ff);font-size:13px;padding:9px 8px;border-radius:var(--r-sm);outline:none;min-width:108px">
+              <option value="ms" selected>ม./วิ</option>
+              <option value="mmin">ม./นาที</option>
+              <option value="kmh">กม./ชม.</option>
+            </select>
+          </div>
+          <input type="hidden" id="swind" value="0"/>
+          <span class="hint" id="swind_converted" style="color:var(--brand-deep)"></span>
+          <div id="wind-indicator" class="wind-indicator calm" style="display:none">
+            <div class="wind-icon" id="wind-icon">🌬️</div>
+            <div class="wind-detail">
+              <div class="wd-main" id="wind-status">—</div>
+              <div class="wd-sub" id="wind-sub">—</div>
+            </div>
+          </div>
+          <div id="droplet-reco" class="droplet-reco" style="display:none">
+            <div class="dr-label">💧 ขนาดหยดน้ำแนะนำตามความเร็วลม</div>
+            <div class="dr-val" id="droplet-reco-val">—</div>
+            <div class="dr-note" id="droplet-reco-note">—</div>
+          </div>
+        </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg></span>ตั้งค่าการพ่น</div>
+    <div class="tog-group">
+      <button class="tog-btn active" id="stog-reco" onclick="setSprayMode('reco')">⭐ แนะนำตามระยะพืช</button>
+      <button class="tog-btn" id="stog-manual" onclick="setSprayMode('manual')">🔧 ตั้งค่าเอง</button>
+    </div>
+
+    <div id="reco-panel">
+      <div class="reco-panel">
+        <h4>📋 ค่าแนะนำสำหรับระยะนี้</h4>
+        <div class="reco-grid4">
+          <div class="reco-item"><div class="reco-num" id="rc_spd">—</div><div class="reco-label">ความเร็วบิน (ม./วิ)</div></div>
+          <div class="reco-item"><div class="reco-num" id="rc_h">—</div><div class="reco-label">ความสูงบิน (ม.)</div></div>
+          <div class="reco-item"><div class="reco-num" id="rc_vol">—</div><div class="reco-label">น้ำ (ล./ไร่)</div></div>
+          <div class="reco-item"><div class="reco-num" id="rc_drop">—</div><div class="reco-label">ขนาดหยด</div></div>
+        </div>
+        <div class="reco-note" id="rc_note">เลือกพืชและระยะเพื่อดูค่าแนะนำ</div>
+        <div id="fert_reco" style="display:none" class="fert-box"></div>
+      </div>
+
+      <div class="card-title" style="font-size:12px;margin-bottom:10px;margin-top:2px">📌 หรือระบุอัตราสารเอง (ถ้าต้องการ override)</div>
+      <div class="form-grid">
+        <div class="field"><label>อัตราสาร <span class="lbl-unit" id="s_rate_u">ล./ไร่</span></label>
+          <input type="number" id="srate" placeholder="ปล่อยว่าง = ใช้ตามแนะนำ" min="0.001" step="0.001"/>
+          <span class="hint" id="s_rate_h">ปล่อยว่างไว้เพื่อใช้ค่าแนะนำตามระยะพืช</span></div>
+        <div class="field"><label>ปริมาณน้ำ <span class="lbl-unit" id="s_water_u">ล./ไร่</span></label>
+          <input type="number" id="swater" placeholder="ปล่อยว่าง = ใช้ตามแนะนำ" min="0.1" step="0.1"/>
+          <span class="hint" id="s_water_h">ปล่อยว่างไว้เพื่อใช้ค่าแนะนำตามระยะพืช</span></div>
+      </div>
+    </div>
+
+    <div id="manual-panel" style="display:none">
+      <div class="form-grid">
+        <div class="field"><label>ปริมาณน้ำ <span class="lbl-unit">ล./ไร่</span></label>
+          <input type="number" id="m_water" value="3" min="0.5" step="0.5"/>
+          <span class="hint">มาตรฐานกรมการข้าว: ข้าว 3–4, ไม้ผล 10–20 ล./ไร่</span></div>
+        <div class="field"><label>อัตราสาร <span class="lbl-unit">ล./ไร่</span></label>
+          <input type="number" id="m_rate" placeholder="เช่น 0.05" min="0.001" step="0.001"/></div>
+        <div class="field"><label>ความเร็วบิน <span class="lbl-unit">ม./วิ</span></label>
+          <input type="number" id="sspd" min="1" max="20" step="0.5"/>
+          <span class="hint" id="s_spd_h"></span></div>
+        <div class="field"><label>ความสูงจากพืช <span class="lbl-unit">ม.</span></label>
+          <select id="sheight">
+            <option value="1.5">1.5 ม. — แม่นยำสูง</option>
+            <option value="2" selected>2.0 ม. — มาตรฐาน</option>
+            <option value="2.5">2.5 ม.</option>
+            <option value="3">3.0 ม. — กว้าง</option>
+          </select></div>
+        <div class="field"><label>ขนาดหยด (Droplet)</label>
+          <select id="sdrop">
+            <option value="fine">Fine 50–150μm — ใบ/ดอก/ปุ๋ยน้ำ</option>
+            <option value="medium" selected>Medium 150–250μm — ทั่วไป</option>
+            <option value="coarse">Coarse 250–400μm — ยาฆ่าหญ้า</option>
+          </select></div>
+        <div class="field"><label>จำนวนหัวฉีด</label>
+          <select id="snozzle"><option value="2">2 หัว</option><option value="4">4 หัว</option></select></div>
+      </div>
+    </div>
+  </div>
+
+  <button class="calc-btn" onclick="calcSpray()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-4m-4-4v8m0 0l-3-3m3 3l3-3"/></svg>
+    คำนวณการพ่น
+  </button>
+  <div class="result-area" id="spray-result"></div>
+</div>
+
+<!-- ===== PAGE: LABEL CONVERTER ===== -->
+<div class="page" id="page-label">
+  <div class="page-head">
+    <h2>🏷️ คำนวณยาจากฉลาก</h2>
+    <p>แปลงอัตราส่วนตามฉลากขวดยา → อัตราที่ใช้จริงสำหรับโดรน (น้ำน้อยกว่าพ่นแบบคน 10–20 เท่า)</p>
+  </div>
+
+  <div class="card">
+    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:#7f1d1d;line-height:1.6">
+      <strong style="color:#dc2626">⚠️ ทำไมต้องแปลงก่อน?</strong><br>
+      ฉลากยาเขียนสัดส่วนสำหรับ<strong>พ่นแบบสะพายหลัง ใช้น้ำ 40–80 ล./ไร่</strong><br>
+      โดรนใช้น้ำเพียง <strong>3–5 ล./ไร่</strong> → ถ้าผสมตามฉลากตรงๆ <strong>ยาจะเข้มข้นเกิน 10–20 เท่า → พืชไหม้ตาย</strong><br>
+      <span style="color:#dc2626;font-weight:700">สิ่งที่ต้องคงที่ = ปริมาณตัวยาต่อไร่ / สิ่งที่เปลี่ยน = ปริมาณน้ำ</span>
+    </div>
+
+    <div class="card-title"><span class="icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg></span>รูปแบบฉลาก — เลือกได้</div>
+    <div class="conv-mode-tabs">
+      <button class="conv-tab active" id="ct-ml20" onclick="setConvMode('ml20')">มล. / น้ำ 20 ล.</button>
+      <button class="conv-tab" id="ct-lirai" onclick="setConvMode('lirai')">ลิตร / ไร่</button>
+      <button class="conv-tab" id="ct-mlrai" onclick="setConvMode('mlrai')">มล. / ไร่</button>
+    </div>
+
+    <!-- MODE: ml per 20L -->
+    <div id="conv-ml20">
+      <div class="form-grid">
+        <div class="field"><label>อัตราสารตามฉลาก <span class="lbl-unit">มล./น้ำ 20 ล.</span></label>
+          <input type="number" id="c_ml" placeholder="เช่น 30" min="0.1" step="0.1"/>
+          <span class="hint">ตัวเลขที่ระบุบนฉลากขวดยา</span></div>
+        <div class="field"><label>ฉลากนี้พ่นได้ <span class="lbl-unit">ไร่ ต่อ น้ำ 20 ล.</span></label>
+          <input type="number" id="c_rai20" placeholder="เช่น 0.5" min="0.01" step="0.01"/>
+          <span class="hint">ถ้าไม่รู้ → ดูจากน้ำที่ใช้ต่อไร่บนฉลาก แล้วหาร 20</span></div>
+        <div class="field"><label>น้ำที่โดรนใช้จริง <span class="lbl-unit">ล./ไร่</span></label>
+          <input type="number" id="c_drone_water" placeholder="เช่น 3" min="0.5" step="0.5"/>
+          <span class="hint ok">มาตรฐาน: ข้าว 3–4 ล./ไร่, ไม้ผล 10–20 ล./ไร่</span></div>
+        <div class="field"><label>พื้นที่แปลง <span class="lbl-unit">ไร่</span></label>
+          <input type="number" id="c_area" placeholder="เช่น 50" min="0.1" step="1"/></div>
+      </div>
+      <button class="calc-btn" style="margin-top:12px" onclick="calcLabel('ml20')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-4m-4-4v8m0 0l-3-3m3 3l3-3"/></svg>
+        คำนวณอัตราผสมโดรน
+      </button>
+    </div>
+
+    <!-- MODE: L/rai -->
+    <div id="conv-lirai" style="display:none">
+      <div class="form-grid">
+        <div class="field"><label>อัตราสารตามฉลาก <span class="lbl-unit">ล./ไร่</span></label>
+          <input type="number" id="c_lr" placeholder="เช่น 1.0" min="0.001" step="0.001"/>
+          <span class="hint">เช่น ยาฆ่าหญ้า 1 ล./ไร่</span></div>
+        <div class="field"><label>น้ำที่โดรนใช้จริง <span class="lbl-unit">ล./ไร่</span></label>
+          <input type="number" id="c_lr_water" placeholder="เช่น 3" min="0.5" step="0.5"/>
+          <span class="hint ok">ข้าว 3–4, ไม้ผล 10–20</span></div>
+        <div class="field"><label>พื้นที่แปลง <span class="lbl-unit">ไร่</span></label>
+          <input type="number" id="c_lr_area" placeholder="เช่น 50" min="0.1" step="1"/></div>
+        <div class="field"><label>ขนาดถังโดรน <span class="lbl-unit">ล.</span></label>
+          <input type="number" id="c_lr_tank" placeholder="เช่น 40" min="1" step="1"/></div>
+      </div>
+      <button class="calc-btn" style="margin-top:12px" onclick="calcLabel('lirai')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-4m-4-4v8m0 0l-3-3m3 3l3-3"/></svg>
+        คำนวณ
+      </button>
+    </div>
+
+    <!-- MODE: ml/rai -->
+    <div id="conv-mlrai" style="display:none">
+      <div class="form-grid">
+        <div class="field"><label>อัตราสารตามฉลาก <span class="lbl-unit">มล./ไร่</span></label>
+          <input type="number" id="c_mr" placeholder="เช่น 50" min="0.1" step="0.1"/></div>
+        <div class="field"><label>น้ำที่โดรนใช้จริง <span class="lbl-unit">ล./ไร่</span></label>
+          <input type="number" id="c_mr_water" placeholder="เช่น 3" min="0.5" step="0.5"/>
+          <span class="hint ok">ข้าว 3–4, ไม้ผล 10–20</span></div>
+        <div class="field"><label>พื้นที่แปลง <span class="lbl-unit">ไร่</span></label>
+          <input type="number" id="c_mr_area" placeholder="เช่น 50" min="0.1" step="1"/></div>
+        <div class="field"><label>ขนาดถังโดรน <span class="lbl-unit">ล.</span></label>
+          <input type="number" id="c_mr_tank" placeholder="เช่น 40" min="1" step="1"/></div>
+      </div>
+      <button class="calc-btn" style="margin-top:12px" onclick="calcLabel('mlrai')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-4m-4-4v8m0 0l-3-3m3 3l3-3"/></svg>
+        คำนวณ
+      </button>
+    </div>
+  </div>
+
+  <div id="label-result"></div>
+</div>
+
+<!-- ===== PAGE: SPREAD ===== -->
+<div class="page" id="page-spread">
+  <div class="page-head"><h2>🌾 หว่านปุ๋ย / เมล็ดพันธุ์</h2><p>คำนวณจำนวนกระสอบ รอบเติม และตั้งค่าระบบหว่าน</p></div>
+  <div class="card">
+    <div class="card-title"><span class="icon">🌾</span>โหมดการคำนวณ</div>
+    <div class="tog-group">
+      <button class="tog-btn active" id="sm-rate" onclick="setSpreadMode('rate')">📐 ตามอัตรา กก./ไร่</button>
+      <button class="tog-btn" id="sm-bag" onclick="setSpreadMode('bag')">📦 จากกระสอบที่มีอยู่</button>
+    </div>
+    <div class="form-grid">
+      <div class="field"><label>ขนาดแปลง <span class="lbl-unit">ไร่</span></label><input type="number" id="spa" placeholder="เช่น 50" min="0.1" step="0.5"/></div>
+      <div class="field"><label>ประเภทวัสดุ</label>
+        <select id="spmat" onchange="onSpMat()">
+          <option value="urea">ปุ๋ยยูเรีย (46-0-0)</option>
+          <option value="npk">ปุ๋ย NPK ทั่วไป</option>
+          <option value="rice_seed">เมล็ดพันธุ์ข้าว</option>
+          <option value="other_seed">เมล็ดพันธุ์อื่นๆ</option>
+          <option value="lime">ปูนขาว/โดโลไมท์</option>
+          <option value="micro">ปุ๋ยอินทรีย์/เม็ดละเอียด</option>
+        </select></div>
+      <div class="field" id="fr-rate"><label>อัตราหว่าน <span class="lbl-unit">กก./ไร่</span></label>
+        <input type="number" id="sprate" placeholder="เช่น 25" min="0.1" step="0.5"/>
+        <span class="hint" id="sp_hint">ยูเรีย 10–25, NPK 15–30, เมล็ดข้าว 10–15 กก./ไร่</span></div>
+      <div class="field" id="fr-bag" style="display:none"><label>กระสอบที่มี <span class="lbl-unit">กระสอบ</span></label>
+        <input type="number" id="spbags" placeholder="เช่น 10" min="1" step="1"/>
+        <span class="hint ok">ระบบจะคำนวณอัตราหว่านให้พอดีกับแปลงอัตโนมัติ</span></div>
+      <div class="field"><label>น้ำหนัก/กระสอบ <span class="lbl-unit">กก. — ระบุเองได้</span></label>
+        <input type="number" id="spbagw" value="50" min="0.1" max="999" step="0.1" placeholder="เช่น 42.5"/>
+        <span class="hint ok">พิมพ์น้ำหนักจริง เช่น 42.5 / 47 / 55 กก. ไม่ต้องตรงกับตัวเลือก</span>
+        </div>
+      <div class="field"><label>ความกว้างหว่าน <span class="lbl-unit">ม. — พิมพ์เองได้</span></label>
+        <input type="number" id="spwid" value="7" min="3" max="12" step="0.5" placeholder="เช่น 7"
+          oninput="calcIntegratedSpread()"/>
+        <span class="hint">T40/T50=7–8ม. | T55/T70P/T100=9–10ม. | ลมแรงให้แคบลง 1–2ม.</span>
+        </div>
+      <div class="field"><label>ความเร็วบิน <span class="lbl-unit">ม./วิ</span></label>
+        <input type="number" id="spspd" min="1" max="20" step="0.5"/>
+        <span class="hint" id="sp_spd_h"></span></div>
+      <div class="field"><label>ความสูงหว่าน <span class="lbl-unit">ม. — พิมพ์เองได้</span></label>
+        <input type="number" id="spheight" value="3" min="1.5" max="8" step="0.5" placeholder="เช่น 3.5"
+          oninput="calcIntegratedSpread()"/>
+        <span class="hint">ระบบปรับให้อัตโนมัติตามลม/ระยะพืช หรือพิมพ์เองได้</span>
+        </div>
+      <div class="field span2" style="overflow:visible"><label>🌬️ ความเร็วลม <span class="lbl-unit">เลือกหน่วยได้</span></label>
+          <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:6px">
+            <input type="number" id="spwind_raw" placeholder="เช่น 2.5" min="0" step="0.1" oninput="onSpreadWindUnit()"
+              style="width:100%;background:var(--surface);border:1.5px solid var(--border);color:var(--text);font-family:var(--ff);font-size:15px;font-weight:600;padding:10px 14px;border-radius:var(--r-sm);outline:none;box-sizing:border-box"/>
+            <select id="spwind_unit" onchange="onSpreadWindUnit()"
+              style="background:var(--surface);border:1.5px solid var(--border);color:var(--text);font-family:var(--ff);font-size:13px;padding:9px 8px;border-radius:var(--r-sm);outline:none;min-width:108px">
+              <option value="ms" selected>ม./วิ</option>
+              <option value="mmin">ม./นาที</option>
+              <option value="kmh">กม./ชม.</option>
+            </select>
+          </div>
+          <span class="hint" id="spwind_converted"></span>
+          <div id="spwind-indicator" style="display:none;margin-top:8px;border-radius:8px;font-size:11px;font-weight:500;overflow:visible"></div>
+        </div>
+      <div class="field"><label>ราคา/กระสอบ <span class="lbl-unit">บาท</span></label>
+        <input type="number" id="spprice" placeholder="(ไม่บังคับ)" min="0"/></div>
+    </div>
+  </div>
+
+  <!-- Crop growth stage for spread height guidance -->
+  <div class="card">
+    <div class="card-title"><span class="icon">🌾</span>ระยะการเจริญเติบโตของพืช — แนะนำความสูงบิน</div>
+    <div class="form-grid">
+      <div class="field"><label>ชนิดพืช</label>
+        <select id="sp_crop" onchange="onSpCropChange()">
+          <option value="rice">ข้าว</option>
+          <option value="sugarcane">อ้อย</option>
+          <option value="corn">ข้าวโพด</option>
+          <option value="cassava">มันสำปะหลัง</option>
+          <option value="other">พืชอื่นๆ</option>
+        </select></div>
+      <div class="field"><label>ระยะการเจริญเติบโต</label>
+        <select id="sp_stage" onchange="onSpStageChange()"><option value="">— เลือกระยะ —</option></select></div>
+      <div class="field"><label>อายุพืช <span class="lbl-unit">วัน</span></label>
+        <input type="number" id="sp_days" placeholder="เช่น 45" min="0" step="1" oninput="onSpDaysChange()"/>
+        <span class="hint" id="sp_days_hint">กรอกอายุเพื่อให้ระบบแนะนำระยะอัตโนมัติ</span></div>
+    </div>
+    <div id="sp_height_reco" style="display:none;margin-top:12px;background:linear-gradient(135deg,#f0fdf4,#f8fafc);border:1.5px solid var(--brand-mid);border-radius:var(--r-sm);padding:14px">
+      <div style="font-size:11px;font-weight:700;color:var(--brand-deep);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">📋 ค่าแนะนำ (อ้างอิง DJI Official + งานวิจัยกรมการข้าว 2564)</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
+        <div style="background:white;border-radius:10px;padding:14px 8px;text-align:center;border:1.5px solid #bbf7d0">
+          <div id="sp_reco_h" style="font-size:28px;font-weight:800;color:#15803d;line-height:1">—</div>
+          <div style="font-size:11px;color:#6b7280;margin-top:5px;font-weight:500">ความสูงบิน</div>
+          <div style="font-size:11px;color:#9ca3af;margin-top:3px">เมตร</div>
+        </div>
+        <div style="background:white;border-radius:10px;padding:14px 8px;text-align:center;border:1.5px solid #bbf7d0">
+          <div id="sp_reco_spd" style="font-size:28px;font-weight:800;color:#1d4ed8;line-height:1">—</div>
+          <div style="font-size:11px;color:#6b7280;margin-top:5px;font-weight:500">ความเร็วบิน</div>
+          <div style="font-size:11px;color:#9ca3af;margin-top:3px">ม./วิ</div>
+        </div>
+        <div style="background:white;border-radius:10px;padding:14px 8px;text-align:center;border:1.5px solid #bbf7d0">
+          <div id="sp_reco_wid" style="font-size:28px;font-weight:800;color:#7c3aed;line-height:1">—</div>
+          <div style="font-size:11px;color:#6b7280;margin-top:5px;font-weight:500">กว้างหว่าน</div>
+          <div style="font-size:11px;color:#9ca3af;margin-top:3px">เมตร</div>
+        </div>
+        <div style="background:rgba(255,255,255,.8);border-radius:8px;padding:10px;text-align:center;border:1px solid var(--brand-mid)">
+          <div id="sp_reco_spd" style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--accent)">—</div>
+          <div style="font-size:9px;color:var(--text2);margin-top:3px;>ความเร็ว (ม./วิ)</div>
+        </div>
+        <div style="background:rgba(255,255,255,.8);border-radius:8px;padding:10px;text-align:center;border:1px solid var(--brand-mid)">
+          <div id="sp_reco_wid" style="font-family:var(--mono);font-size:18px;font-weight:700;color:#7c3aed">—</div>
+          <div style="font-size:9px;color:var(--text2);margin-top:3px;text-transform:uppercase">swath (ม.)</div>
+        </div>
+      </div>
+      <div id="sp_reco_note" style="font-size:12px;color:#374151;padding:10px 12px;background:white;border-radius:8px;border:1px solid #d1fae5;line-height:1.7;margin-top:2px"></div>
+      <div id="sp_reco_warn" style="display:none;margin-top:8px;padding:10px 12px;background:#fee2e2;border-radius:8px;font-size:12px;color:#dc2626;font-weight:600;line-height:1.7"></div>
+    </div>
+  </div>
+
+  <button class="calc-btn" onclick="calcSpread()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-4m-4-4v8m0 0l-3-3m3 3l3-3"/></svg>
+    คำนวณการหว่าน
+  </button>
+  <div id="spread-result" style="margin-top:16px"></div>
+
+  <!-- LIVE FLIGHT LOG inside spread page -->
+  <div id="spread-live-log" style="display:none;margin-top:16px">
+    <div class="card" style="border-color:var(--brand);border-width:2px">
+      <div class="card-title" style="margin-bottom:8px">
+        <span class="icon" style="background:#dcfce7">✈️</span>
+        <span>บันทึกการบินจริง — Real Time</span>
+        <span id="log-total-remain" style="margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--brand-deep)"></span>
+      </div>
+
+      <!-- Progress bar -->
+      <div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:4px">
+          <span>ความคืบหน้า</span>
+          <span id="log-progress-text">0 / 0 ไร่</span>
+        </div>
+        <div style="height:10px;background:var(--surface2);border-radius:100px;overflow:hidden">
+          <div id="log-progress-bar" style="height:100%;background:linear-gradient(90deg,var(--brand),#34d399);border-radius:100px;width:0%;transition:width .5s ease"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:3px">
+          <span id="log-done-rai">ทำแล้ว: 0 ไร่</span>
+          <span id="log-remain-rai" style="color:var(--warn)">เหลือ: 0 ไร่</span>
+        </div>
+      </div>
+
+      <!-- Rounds list -->
+      <div id="live-rounds-list"></div>
+
+      <!-- Add round button -->
+      <button class="add-round-btn" onclick="addLiveRound()" id="add-live-round-btn" style="margin-bottom:8px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        เพิ่มรอบบินถัดไป
+      </button>
+
+      <!-- Summary row -->
+      <div id="live-summary-row" style="display:none;background:var(--surface2);border-radius:var(--r-sm);padding:12px">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;font-size:11px">
+          <div><div id="ls-used" style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--brand-deep)">0</div><div style="color:var(--text3)">ใช้ไปรวม (กก.)</div></div>
+          <div><div id="ls-done" style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--accent)">0</div><div style="color:var(--text3)">ทำได้รวม (ไร่)</div></div>
+          <div><div id="ls-rate" style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--warn)">—</div><div style="color:var(--text3)">อัตราจริง (กก./ไร่)</div></div>
+          <div><div id="ls-remain-mat" style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--danger)">0</div><div style="color:var(--text3)">วัสดุเหลือ (กก.)</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== PAGE: PLAN ===== -->
+<div class="page" id="page-plan">
+  <div class="page-head"><h2>📋 วางแผนทั้งแปลง</h2><p>สร้างตารางบินพร้อมเวลาประมาณการเสร็จ</p></div>
+  <div class="card">
+    <div class="form-grid">
+      <div class="field"><label>ขนาดแปลง <span class="lbl-unit">ไร่</span></label><input type="number" id="pla" placeholder="เช่น 100" min="1"/></div>
+      <div class="field"><label>ภารกิจ</label>
+        <select id="pltask">
+          <option value="spray">พ่นยา/ปุ๋ย</option>
+          <option value="spread">หว่านปุ๋ย/เมล็ด</option>
+          <option value="both">พ่น + หว่าน (2 รอบ)</option>
+        </select></div>
+      <div class="field"><label>จำนวนแบตเตอรี่ <span class="lbl-unit">ก้อน</span></label><input type="number" id="plbat" value="3" min="1" max="12"/></div>
+      <div class="field"><label>เวลาชาร์จต่อก้อน <span class="lbl-unit">นาที</span></label><input type="number" id="plcharge" value="20" min="5" max="60"/></div>
+      <div class="field"><label>เวลาเติมสาร/เมล็ด <span class="lbl-unit">นาที/รอบ</span></label><input type="number" id="plfill" value="5" min="1" max="30"/></div>
+      <div class="field"><label>เวลาเริ่มงาน</label><input type="time" id="plstart" value="07:00"/></div>
+    </div>
+  </div>
+  <button class="calc-btn" onclick="calcPlan()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+    วางแผนการทำงาน
+  </button>
+  <div id="plan-result" style="margin-top:16px"></div>
+</div>
+
+<!-- ===== PAGE: RPM CALCULATOR ===== -->
+<div class="page" id="page-rpm">
+  <div class="page-head">
+    <h2>🌀 คำนวณรอบจานหว่าน (RPM)</h2>
+    <p>อ้างอิง: DJI Official + งานวิจัย ScienceDirect 2024 + Ohio State University Extension</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">⚙️</span>ข้อมูลวัสดุและสภาพการบิน</div>
+    <div class="form-grid">
+      <div class="field"><label>ประเภทวัสดุ</label>
+        <select id="rpm_mat" onchange="calcRPM()">
+          <option value="urea">ปุ๋ยยูเรีย (46-0-0) — เม็ด 2–4 มม. ~0.75 กก./ล.</option>
+          <option value="npk">ปุ๋ย NPK — เม็ด 2–5 มม. ~0.9 กก./ล.</option>
+          <option value="rice_seed">เมล็ดข้าว — เม็ด 4–6 มม. ~0.58 กก./ล.</option>
+          <option value="rapeseed">เมล็ดพืชเล็ก (ผักคะน้า/หญ้า) — เม็ด 0.5–2 มม.</option>
+          <option value="lime">ปูนขาว/โดโลไมท์ — ผง ~0.9 กก./ล.</option>
+          <option value="micro">ปุ๋ยอินทรีย์/เม็ดละเอียด — ~0.6 กก./ล.</option>
+        </select></div>
+      <div class="field"><label>รุ่นโดรน</label>
+        <select id="rpm_drone" onchange="calcRPM()">
+          <option value="T20P">T20P (ถัง 25 กก.)</option>
+          <option value="T25P">T25P (ถัง 25 กก.)</option>
+          <option value="T30">T30 (ถัง 30 กก.)</option>
+          <option value="T40">T40 (ถัง 50 กก.)</option>
+          <option value="T50">T50 (ถัง 50 กก.)</option>
+          <option value="T55">T55 (ถัง 55 กก.)</option>
+          <option value="T70P">T70P (ถัง 100 กก.)</option>
+          <option value="T100">T100 (ถัง 100 กก.)</option>
+        </select></div>
+      <div class="field"><label>ความกว้างหว่านที่ต้องการ <span class="lbl-unit">ม.</span></label>
+        <select id="rpm_width" onchange="calcRPM()">
+          <option value="4">4 ม. — แคบมาก (ขอบแปลงแคบ)</option>
+          <option value="5">5 ม. — แคบ (ลมแรง/ขอบแปลง)</option>
+          <option value="6">6 ม. — ปานกลาง</option>
+          <option value="7" selected>7 ม. — มาตรฐาน</option>
+          <option value="8">8 ม. — กว้าง</option>
+          <option value="9">9 ม. — กว้างมาก</option>
+          <option value="10">10 ม. — กว้างสูงสุด</option>
+        </select></div>
+      <div class="field"><label>ความสูงบิน <span class="lbl-unit">ม.</span></label>
+        <select id="rpm_height" onchange="calcRPM()">
+          <option value="2">2 ม.</option>
+          <option value="3" selected>3 ม. — มาตรฐาน (DJI)</option>
+          <option value="4">4 ม.</option>
+          <option value="5">5 ม.</option>
+        </select></div>
+      <div class="field"><label>ความเร็วลม <span class="lbl-unit">ม./วิ</span></label>
+        <input type="number" id="rpm_wind" placeholder="เช่น 2" min="0" max="6" step="0.5" value="2" oninput="calcRPM()"/></div>
+      <div class="field"><label>อัตราหว่าน <span class="lbl-unit">กก./ไร่</span></label>
+        <input type="number" id="rpm_rate" placeholder="เช่น 25" min="1" step="0.5" value="25" oninput="calcRPM()"/></div>
+    </div>
+  </div>
+
+  <div id="rpm-output"></div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">📚</span>หลักการ RPM จาน — อ้างอิงวิจัย</div>
+    <div style="font-size:12px;color:var(--text2);line-height:1.8">
+      <p style="margin-bottom:8px"><strong style="color:var(--brand-deep)">🔬 DJI Official (T100/T50/T40):</strong> ค่ามาตรฐาน <code style="background:var(--brand-light);color:var(--brand-deep);padding:1px 6px;border-radius:3px;font-family:var(--mono)">1,000–1,100 RPM</code> ที่ความสูง 3 ม. ได้ swath 7–10 ม. CV &lt;30%</p>
+      <p style="margin-bottom:8px"><strong style="color:var(--brand-deep)">📐 กฎ RPM vs Width:</strong> RPM ↑100 → swath กว้างขึ้น ~0.5–0.8 ม. / ความสูง ↑1 ม. → swath กว้างขึ้น ~0.5–1 ม.</p>
+      <p style="margin-bottom:8px"><strong style="color:var(--warn)">⚠️ Headland Rule:</strong> ลด RPM 30–40% ขณะวิ่งเก็บขอบ ป้องกันปุ๋ยออกนอกแปลง</p>
+      <p style="margin-bottom:8px"><strong style="color:var(--accent)">💨 Wind Correction:</strong> ลมแรงขึ้น 1 ม./วิ → เพิ่ม RPM 50–100 เพื่อชดเชย (ฝั่งใต้ลม) หรือลด RPM ฝั่งเหนือลม</p>
+      <p><strong style="color:var(--danger)">⚡ Critical:</strong> RPM ต่างกัน 10+ ระหว่าง 2 จาน → spreading ไม่สมมาตร ตรวจด้วย tachometer ก่อนงาน</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: FLIGHT LOG ===== -->
+<div class="page" id="page-log">
+  <div class="page-head">
+    <h2>📝 บันทึกการบินจริง</h2>
+    <p>ชั่งน้ำหนักก่อน-หลังทุกรอบ — แม่นยำแม้แบตหมดกลางถัง</p>
+  </div>
+
+  <!-- SETUP -->
+  <div class="log-setup">
+    <h3>⚙️ ตั้งค่าเซสชันการบิน</h3>
+    <div class="form-grid">
+      <div class="field"><label>วันที่บิน</label>
+        <input type="date" id="log_date"/></div>
+      <div class="field"><label>แปลงที่บิน / ชื่องาน</label>
+        <input type="text" id="log_name" placeholder="เช่น นาแปลง A ข้าวระยะแตกกอ"/></div>
+      <div class="field"><label>พื้นที่ทั้งหมด <span class="lbl-unit">ไร่</span></label>
+        <input type="number" id="log_total_area" placeholder="เช่น 50" min="0.1" step="0.5" oninput="updateLogSummary()"/></div>
+      <div class="field"><label>อัตราหว่าน/พ่นที่ตั้งไว้ <span class="lbl-unit">กก./ไร่ หรือ ล./ไร่</span></label>
+        <input type="number" id="log_plan_rate" placeholder="เช่น 25" min="0.01" step="0.01" oninput="updateLogSummary()"/></div>
+      <div class="field"><label>ประเภทงาน</label>
+        <select id="log_type">
+          <option value="spread">หว่านปุ๋ย/เมล็ด (กก.)</option>
+          <option value="spray">พ่นยา/ปุ๋ยน้ำ (ลิตร)</option>
+        </select></div>
+      <div class="field"><label>วัสดุ/สารที่ใช้</label>
+        <input type="text" id="log_material" placeholder="เช่น ยูเรีย 46-0-0 หรือ ยาฆ่าแมลง"/></div>
+    </div>
+  </div>
+
+  <!-- ROUNDS -->
+  <div id="log-rounds"></div>
+
+  <button class="add-round-btn" onclick="addLogRound()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+    เพิ่มรอบบินถัดไป
+  </button>
+
+  <!-- SUMMARY -->
+  <div id="log-summary" style="display:none"></div>
+
+  <!-- SAVE/RESET -->
+  <div style="display:flex;gap:10px;margin-top:4px">
+    <button class="calc-btn" style="flex:1" onclick="saveLogSession()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      บันทึกเซสชัน
+    </button>
+    <button class="reset-btn" style="flex:0 0 auto;width:auto;padding:0 20px;margin:0" onclick="resetLog()">↺ ล้างใหม่</button>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="log-history" style="margin-top:20px"></div>
+</div>
+
+<script>
+var DR={
+  T20:{name:'T20',tank:20,flow2:6,flow4:null,wid:7,spd:7,spd_max:10,spr_kg:0,eff_ha:12,bat:10,sys:'OLD',rdesc:'ตั้ง Flow Rate (L/min) บนรีโมท'},
+  T20P:{name:'T20P',tank:20,flow2:12,flow4:null,wid:7,spd:7,spd_max:10,spr_kg:25,eff_ha:12,bat:7,sys:'NEW',rdesc:'ตั้ง Volume/Area (L/ha) ใน Agras App'},
+  T25P:{name:'T25P',tank:20,flow2:16,flow4:null,wid:7.5,spd:8,spd_max:12,spr_kg:25,eff_ha:15,bat:8,sys:'NEW',rdesc:'ตั้ง Volume/Area (L/ha) ใน Agras App',tag:'new'},
+  T30:{name:'T30',tank:30,flow2:8,flow4:null,wid:9,spd:7,spd_max:12,spr_kg:30,eff_ha:16,bat:10,sys:'OLD',rdesc:'ตั้ง Spray Flow (L/min) บนรีโมท T30'},
+  T40:{name:'T40',tank:40,flow2:12,flow4:null,wid:11,spd:9,spd_max:15,spr_kg:50,eff_ha:21.3,bat:8,sys:'NEW',rdesc:'ตั้ง Volume/Area (L/ha) ใน Agras App'},
+  T50:{name:'T50',tank:40,flow2:16,flow4:24,wid:11,spd:9,spd_max:15,spr_kg:50,eff_ha:21.3,bat:8,sys:'NEW',rdesc:'ตั้ง Volume/Area (L/ha) ใน Agras App'},
+  T55:{name:'T55',tank:50,flow2:40,flow4:50,wid:10,spd:10,spd_max:16,spr_kg:55,eff_ha:28,bat:9,sys:'NEW',rdesc:'ตั้ง Volume/Area (L/ha) ใน Agras App',tag:'th'},
+  T70P:{name:'T70P',tank:70,flow2:30,flow4:40,wid:11,spd:12,spd_max:20,spr_kg:100,eff_ha:35,bat:9,sys:'NEW',rdesc:'ตั้ง Volume/Area (L/ha) ใน Agras App',tag:'new'},
+  T100:{name:'T100',tank:100,flow2:30,flow4:40,wid:13,spd:14,spd_max:20,spr_kg:100,eff_ha:40,bat:9,sys:'NEW',rdesc:'ตั้ง Volume/Area (L/ha) ใน Agras App',tag:'new'}
+};
+
+var DRONE_COLORS={T20:'#16a34a',T20P:'#16a34a',T25P:'#2563eb',T30:'#16a34a',T40:'#16a34a',T50:'#2563eb',T55:'#d97706',T70P:'#dc2626',T100:'#16a34a'};
+
+var STAGES={
+  rice:[
+    {id:'seedling',lbl:'ระยะกล้า/งอก',days:'0–14 วัน',spd:4.5,h:1.5,vol:3.0,drop:'fine',note:'น้ำ 3 ล./ไร่ (กรมการข้าว 2564) บินช้า-ต่ำ ระวังลมล้มต้น',fert:{insect:'อิมิดาโคลพริด 20 มล./น้ำ 20 ล.',fungus:'แมนโคเซบ 30–40 ก./น้ำ 20 ล.',fert_n:'ปุ๋ยน้ำ 30-10-10 อัตรา 20–30 มล./น้ำ 20 ล.',hormone:'ออคซิน 10 มล./น้ำ 20 ล.',amino:'กรดอะมิโน 15–20 มล./น้ำ 20 ล.'}},
+    {id:'tiller',lbl:'ระยะแตกกอ',days:'15–50 วัน',spd:5.5,h:2.0,vol:3.0,drop:'medium',note:'น้ำ 3 ล./ไร่ ระยะสำคัญที่สุด ให้ N กระตุ้นแตกกอ',fert:{insect:'คลอร์ไพริฟอส 50 มล./น้ำ 20 ล.',fungus:'โพรพิโคนาโซล 15 มล./น้ำ 20 ล.',fert_n:'ปุ๋ยน้ำ 30-10-10 อัตรา 30 มล./น้ำ 20 ล.',fert_npk:'NPK 16-8-8 อัตรา 30 มล./น้ำ 20 ล.',hormone:'ไซโตไคนิน 10–15 มล./น้ำ 20 ล.',amino:'กรดอะมิโน+สาหร่าย 20 มล./น้ำ 20 ล.'}},
+    {id:'panicle',lbl:'ระยะตั้งท้อง/กำเนิดช่อดอก',days:'50–75 วัน',spd:5.0,h:2.5,vol:4.0,drop:'medium',note:'น้ำ 4 ล./ไร่ ระยะวิกฤต ระวังยาทำลายดอก',fert:{fungus:'ไตรไซโคลโซล 20 ก./น้ำ 20 ล.',fert_p:'ปุ๋ยน้ำ 10-52-10 อัตรา 25 มล./น้ำ 20 ล.',fert_k:'ปุ๋ยน้ำ 13-0-46 อัตรา 25 มล./น้ำ 20 ล.',hormone:'GA3+ไซโตไคนิน 10 มล./น้ำ 20 ล.',calcium:'Ca-B 25–30 มล./น้ำ 20 ล.'}},
+    {id:'heading',lbl:'ระยะออกรวง/ผสมเกสร',days:'75–90 วัน',spd:5.0,h:2.5,vol:4.0,drop:'medium',note:'น้ำ 4 ล./ไร่ ระวังโรคไหม้คอรวง พ่นเช้า/เย็น',fert:{fungus:'ไตรไซโคลโซล+คาร์เบนดาซิม 20+20 ก./น้ำ 20 ล.',fert_k:'ปุ๋ยน้ำ 0-0-60 อัตรา 25 มล./น้ำ 20 ล.',hormone:'GA3 5–10 มล./น้ำ 20 ล.',calcium:'Ca-B 25 มล./น้ำ 20 ล.'}},
+    {id:'ripening',lbl:'ระยะเมล็ดแก่/สุก',days:'90–120 วัน',spd:7.0,h:3.0,vol:3.0,drop:'coarse',note:'น้ำ 3 ล./ไร่ บินเร็วสูงได้ ใช้หยดหยาบ',fert:{fert_k:'ปุ๋ยน้ำ K สูง 20 มล./น้ำ 20 ล.'}}
+  ],
+  sugarcane:[
+    {id:'germination',lbl:'ระยะงอก/ตั้งต้น',days:'0–30 วัน',spd:4.0,h:1.5,vol:3.0,drop:'fine',note:'น้ำ 3 ล./ไร่ ต้นอ่อน ความเร็ว 3–4 ม./วิ',fert:{fert_n:'ปุ๋ยน้ำ 30-20-10 อัตรา 30 มล./น้ำ 20 ล.',hormone:'ออคซิน 10 มล./น้ำ 20 ล.',amino:'กรดอะมิโน 20 มล./น้ำ 20 ล.'}},
+    {id:'tillering',lbl:'ระยะแตกหน่อ',days:'30–90 วัน',spd:5.0,h:2.0,vol:4.0,drop:'medium',note:'น้ำ 4 ล./ไร่ ต้องการ N สูง',fert:{fert_n:'ปุ๋ยน้ำ 28-14-14 อัตรา 40 มล./น้ำ 20 ล.',hormone:'ไซโตไคนิน 15 มล./น้ำ 20 ล.',amino:'กรดอะมิโน+สาหร่าย 20 มล./น้ำ 20 ล.'}},
+    {id:'grandgrowth',lbl:'ระยะเจริญเติบโตเร็ว',days:'90–240 วัน',spd:6.0,h:3.0,vol:5.0,drop:'medium',note:'น้ำ 5 ล./ไร่ ต้นสูง บิน 3 ม. อ้อยใหญ่ลดเหลือ 3–4 ม./วิ',fert:{fert_n:'ปุ๋ยน้ำ N สูง 35 มล./น้ำ 20 ล.',fert_npk:'NPK สูตรเสมอ 35 มล./น้ำ 20 ล.',hormone:'GA3 10 มล./น้ำ 20 ล.',micro:'ธาตุรอง Fe+Zn 20 มล./น้ำ 20 ล.'}},
+    {id:'maturation',lbl:'ระยะสะสมน้ำตาล/แก่',days:'240–330 วัน',spd:7.0,h:3.0,vol:3.0,drop:'coarse',note:'น้ำ 3 ล./ไร่ หยุดพ่น N ก่อนตัด 1 เดือน',fert:{fert_k:'ปุ๋ยน้ำ 0-0-60 อัตรา 25 มล./น้ำ 20 ล.'}}
+  ],
+  corn:[
+    {id:'seedling_c',lbl:'ระยะงอก V1–V3',days:'0–21 วัน',spd:4.5,h:1.5,vol:3.0,drop:'fine',note:'น้ำ 3 ล./ไร่ ต้นกล้าอ่อน ระวังมาก',fert:{fert_n:'ปุ๋ยน้ำ 30-10-10 อัตรา 25 มล./น้ำ 20 ล.',hormone:'ออคซิน 10 มล./น้ำ 20 ล.'}},
+    {id:'vegetative',lbl:'ระยะเจริญ V4–V8',days:'21–45 วัน',spd:5.5,h:2.0,vol:4.0,drop:'medium',note:'น้ำ 4 ล./ไร่ ต้องการ N สูง',fert:{fert_n:'ปุ๋ยน้ำ 28-14-14 อัตรา 30 มล./น้ำ 20 ล.',fert_npk:'NPK สูตรเสมอ 30 มล./น้ำ 20 ล.',amino:'กรดอะมิโน 20 มล./น้ำ 20 ล.'}},
+    {id:'tassel',lbl:'ระยะแทงฝัก/ออกดอก VT–R2',days:'45–65 วัน',spd:5.0,h:3.0,vol:5.0,drop:'medium',note:'น้ำ 5 ล./ไร่ ต้นสูง ระวังยาสัมผัสดอก',fert:{fert_p:'ปุ๋ยน้ำ 10-52-10 อัตรา 25 มล./น้ำ 20 ล.',hormone:'GA3 10 มล./น้ำ 20 ล.',calcium:'Ca-B 25 มล./น้ำ 20 ล.'}},
+    {id:'grain_fill',lbl:'ระยะสะสมแป้ง R3–R5',days:'65–90 วัน',spd:6.0,h:3.0,vol:4.0,drop:'medium',note:'น้ำ 4 ล./ไร่ เพิ่ม K สะสมแป้ง',fert:{fert_k:'ปุ๋ยน้ำ 15-5-30 อัตรา 25 มล./น้ำ 20 ล.',micro:'Zn+B 15 มล./น้ำ 20 ล.'}},
+    {id:'mature_c',lbl:'ระยะสุกแก่',days:'90–115 วัน',spd:7.0,h:3.0,vol:3.0,drop:'coarse',note:'น้ำ 3 ล./ไร่ บินเร็วสูงได้',fert:{}}
+  ],
+  cassava:[
+    {id:'establish',lbl:'ระยะตั้งต้น/แตกยอด',days:'0–30 วัน',spd:4.5,h:1.5,vol:3.0,drop:'fine',note:'น้ำ 3 ล./ไร่ ต้นอ่อน ความเร็ว 4–5 ม./วิ',fert:{fert_n:'ปุ๋ยน้ำ 30-20-10 อัตรา 25 มล./น้ำ 20 ล.',hormone:'ออคซิน 10 มล./น้ำ 20 ล.',amino:'กรดอะมิโน 20 มล./น้ำ 20 ล.'}},
+    {id:'tuber_init',lbl:'ระยะเริ่มสร้างหัว',days:'30–120 วัน',spd:5.5,h:2.5,vol:4.0,drop:'medium',note:'น้ำ 4 ล./ไร่ ระยะสำคัญ ให้ NPK ครบภายใน 120 วัน',fert:{fert_npk:'NPK 15-15-15 อัตรา 30 มล./น้ำ 20 ล.',fert_p:'ปุ๋ยน้ำ P สูง 25 มล./น้ำ 20 ล.',hormone:'ไซโตไคนิน 10 มล./น้ำ 20 ล.',micro:'K+Zn+B 20 มล./น้ำ 20 ล.'}},
+    {id:'bulking',lbl:'ระยะพอกหัว/สะสมแป้ง',days:'120–270 วัน',spd:6.0,h:3.0,vol:4.0,drop:'medium',note:'น้ำ 4 ล./ไร่ เน้น K พอกแป้ง หลีกเลี่ยง N สูง',fert:{fert_k:'ปุ๋ยน้ำ 0-0-60 อัตรา 25 มล./น้ำ 20 ล.',micro:'K+Mn 20 มล./น้ำ 20 ล.'}},
+    {id:'harvest_cs',lbl:'ระยะใกล้เก็บเกี่ยว',days:'270–365 วัน',spd:7.0,h:3.0,vol:3.0,drop:'coarse',note:'น้ำ 3 ล./ไร่ หยุดปุ๋ย N ก่อนเก็บ 30 วัน',fert:{}}
+  ],
+  durian:[
+    {id:'flush',lbl:'ระยะแทงยอดอ่อน (ใบชุดใหม่)',days:'หลังตัดแต่ง',spd:3.0,h:1.5,vol:10.0,drop:'fine',note:'น้ำ 10 ล./ไร่ Orchard Mode บินช้าต่ำ ต้องการ N กระตุ้นใบ',fert:{insect:'อิมิดาโคลพริด+คลอร์ 20+30 มล./น้ำ 20 ล.',fert_n:'ปุ๋ยน้ำ 30-20-10 อัตรา 50 มล./น้ำ 20 ล.+สาหร่าย 20 มล.',hormone:'ออคซิน+ไซโตไคนิน 15 มล./น้ำ 20 ล.',amino:'กรดอะมิโน 30 มล./น้ำ 20 ล.'}},
+    {id:'young_leaf',lbl:'ระยะใบอ่อน (สีทองแดง)',days:'7–14 วันหลังแทง',spd:3.5,h:1.5,vol:10.0,drop:'fine',note:'น้ำ 10 ล./ไร่ ป้องกันเพลี้ยไฟ+หนอน',fert:{insect:'อิมิดาโคลพริด 20 มล./น้ำ 20 ล.+สารจับใบ',fungus:'คาร์เบนดาซิม 20 ก./น้ำ 20 ล.',fert_n:'ปุ๋ยน้ำ N สูง 40 มล./น้ำ 20 ล.',amino:'กรดอะมิโน 30 มล./น้ำ 20 ล.'}},
+    {id:'mature_leaf',lbl:'ระยะใบเพสลาด (ใบแก่ครึ่งหน่วย)',days:'14–25 วันหลังแทง',spd:4.0,h:2.0,vol:12.0,drop:'medium',note:'น้ำ 12 ล./ไร่ ใบเริ่มแข็ง พ่นสะสมอาหาร',fert:{fert_p:'ปุ๋ยน้ำ 10-52-10 อัตรา 40 มล./น้ำ 20 ล.',fert_npk:'NPK 15-15-15 อัตรา 40 มล./น้ำ 20 ล.',hormone:'ออคซิน+GA3 10 มล./น้ำ 20 ล.',calcium:'Ca-B 40 มล./น้ำ 20 ล.'}},
+    {id:'full_leaf',lbl:'ระยะใบเขียวเต็ม (พร้อมออกดอก)',days:'25–45 วันหลังแทง',spd:4.0,h:2.0,vol:12.0,drop:'medium',note:'น้ำ 12 ล./ไร่ พ่นสะสมอาหาร 3–5 ครั้ง เตรียมออกดอก',fert:{fert_p:'ปุ๋ยน้ำ 8-24-24 อัตรา 50 มล./น้ำ 20 ล.',hormone:'ไทโอยูเรีย 0.5% อัตรา 100 ก./น้ำ 20 ล.',calcium:'Ca-B 40 มล./น้ำ 20 ล.',micro:'Mg+Fe+Mn 20 มล./น้ำ 20 ล.'}},
+    {id:'flower_bud',lbl:'ระยะตาดอก/กำลังออกดอก',days:'หลังใบแก่',spd:3.0,h:1.5,vol:15.0,drop:'fine',note:'น้ำ 15 ล./ไร่ ห้ามพ่น N เด็ดขาด! พ่นได้แค่ฮอร์โมน+Ca-B',fert:{hormone:'GA3 5 มล.+อะโทนิค 5 มล./น้ำ 20 ล.',calcium:'Ca-B 40 มล./น้ำ 20 ล.',fert_p:'ปุ๋ยน้ำ 10-52-10 (ไม่มี N) 30 มล./น้ำ 20 ล.'}},
+    {id:'fruit_set',lbl:'ระยะกระดุม–หัวกำไล (ติดผล)',days:'หลังดอกบาน 2–4 สัปดาห์',spd:3.0,h:1.5,vol:15.0,drop:'fine',note:'น้ำ 15 ล./ไร่ ห้ามพ่น N เด็ดขาด ระวังผลร่วง',fert:{fert_p:'ปุ๋ยน้ำ 10-52-10 อัตรา 30 มล./น้ำ 20 ล.',hormone:'ออคซิน (NAA) 5–8 มล./น้ำ 20 ล.',calcium:'Ca-B 40 มล./น้ำ 20 ล.'}},
+    {id:'young_fruit',lbl:'ระยะผลอ่อน (หัวกำไล–ผลชุบ)',days:'1–2 เดือนหลังติดผล',spd:3.5,h:2.0,vol:15.0,drop:'fine',note:'น้ำ 15 ล./ไร่ สร้างเนื้อ ต้องการ Ca สูง',fert:{fert_k:'ปุ๋ยน้ำ K สูง 15-5-30 อัตรา 40 มล./น้ำ 20 ล.',calcium:'Ca-B 50 มล./น้ำ 20 ล.',micro:'Mg+Fe 20 มล./น้ำ 20 ล.',hormone:'ไซโตไคนิน 10 มล./น้ำ 20 ล.'}},
+    {id:'mature_fruit',lbl:'ระยะผลกึ่งแก่–แก่เต็มที่',days:'2–4 เดือนหลังติดผล',spd:4.0,h:2.0,vol:12.0,drop:'medium',note:'น้ำ 12 ล./ไร่ หยุดสารตกค้าง 14 วันก่อนเก็บ',fert:{fert_k:'ปุ๋ยน้ำ K สูง 30 มล./น้ำ 20 ล.',calcium:'Ca-B 30 มล./น้ำ 20 ล.'}}
+  ],
+  longan:[
+    {id:'flush_l',lbl:'ระยะแทงยอด/ใบอ่อน',days:'หลังตัดแต่ง',spd:3.5,h:1.5,vol:10.0,drop:'fine',note:'น้ำ 10 ล./ไร่ Orchard Mode กระตุ้นใบ',fert:{insect:'อิมิดาโคลพริด 20 มล./น้ำ 20 ล.',fert_n:'ปุ๋ยน้ำ N สูง 40 มล./น้ำ 20 ล.',amino:'กรดอะมิโน 30 มล./น้ำ 20 ล.'}},
+    {id:'leafy',lbl:'ระยะใบเขียวสมบูรณ์/สะสมอาหาร',days:'30–60 วัน',spd:4.0,h:2.0,vol:12.0,drop:'medium',note:'น้ำ 12 ล./ไร่ พ่น P+K สะสม เตรียมออกดอก',fert:{fert_p:'ปุ๋ยน้ำ 8-24-24 อัตรา 40 มล./น้ำ 20 ล.',hormone:'ไทโอยูเรีย 0.5% 100 ก./น้ำ 20 ล.',calcium:'Ca-B 30 มล./น้ำ 20 ล.',micro:'Mg+Fe 20 มล./น้ำ 20 ล.'}},
+    {id:'flower_l',lbl:'ระยะออกดอก',days:'หลังสะสม 60+ วัน',spd:3.0,h:1.5,vol:15.0,drop:'fine',note:'น้ำ 15 ล./ไร่ ห้ามพ่น N ระวังดอกร่วง',fert:{fert_p:'ปุ๋ยน้ำ P สูง 30 มล./น้ำ 20 ล.',hormone:'GA3+อะโทนิค 5+5 มล./น้ำ 20 ล.',calcium:'Ca-B 40 มล./น้ำ 20 ล.'}},
+    {id:'fruit_l',lbl:'ระยะติดผล–ผลขยาย',days:'1–3 เดือน',spd:3.5,h:2.0,vol:12.0,drop:'fine',note:'น้ำ 12 ล./ไร่ Ca สูง ป้องกันผลแตก',fert:{fert_k:'ปุ๋ยน้ำ K สูง 40 มล./น้ำ 20 ล.',calcium:'Ca-B 50 มล./น้ำ 20 ล.',hormone:'ไซโตไคนิน 10 มล./น้ำ 20 ล.'}},
+    {id:'ripe_l',lbl:'ระยะผลแก่/เก็บเกี่ยว',days:'3–4 เดือน',spd:4.5,h:2.0,vol:10.0,drop:'medium',note:'น้ำ 10 ล./ไร่ หยุดสารตกค้าง 14 วัน',fert:{fert_k:'ปุ๋ยน้ำ K 25 มล./น้ำ 20 ล.'}}
+  ],
+  rubber:[
+    {id:'young_r',lbl:'ยางอ่อนอายุ 1–3 ปี',days:'ปีที่ 1–3',spd:4.0,h:2.0,vol:5.0,drop:'medium',note:'น้ำ 5 ล./ไร่',fert:{fert_n:'ปุ๋ยน้ำ N สูง 35 มล./น้ำ 20 ล.',fert_npk:'NPK 15-15-15 อัตรา 35 มล./น้ำ 20 ล.',amino:'กรดอะมิโน 20 มล./น้ำ 20 ล.'}},
+    {id:'immature_r',lbl:'ยางก่อนเปิดกรีด อายุ 4–6 ปี',days:'ปีที่ 4–6',spd:5.0,h:2.5,vol:5.0,drop:'medium',note:'น้ำ 5 ล./ไร่ เตรียมกรีด เน้น P+K',fert:{fert_p:'ปุ๋ยน้ำ P สูง 35 มล./น้ำ 20 ล.',fert_k:'ปุ๋ยน้ำ K สูง 30 มล./น้ำ 20 ล.',micro:'Mg+B 20 มล./น้ำ 20 ล.'}},
+    {id:'tapping',lbl:'ยางกรีด อายุ 7 ปีขึ้นไป',days:'7+ ปี',spd:5.0,h:2.5,vol:5.0,drop:'medium',note:'น้ำ 5 ล./ไร่ ป้องกันโรคใบ',fert:{fungus:'แมนโคเซบ+คาร์เบนดาซิม 30+20 ก./น้ำ 20 ล.',fert_npk:'NPK สูตรเสมอ 35 มล./น้ำ 20 ล.',micro:'Mg+Mn 20 มล./น้ำ 20 ล.'}}
+  ],
+  oil_palm:[
+    {id:'nursery',lbl:'ระยะกล้า/ต้นเล็ก',days:'0–24 เดือน',spd:4.0,h:2.0,vol:4.0,drop:'medium',note:'น้ำ 4 ล./ไร่',fert:{fert_npk:'NPK 15-15-15 อัตรา 30 มล./น้ำ 20 ล.',hormone:'ออคซิน 10 มล./น้ำ 20 ล.',amino:'กรดอะมิโน 20 มล./น้ำ 20 ล.'}},
+    {id:'immature_p',lbl:'ระยะก่อนให้ผล',days:'24–48 เดือน',spd:5.0,h:2.5,vol:4.0,drop:'medium',note:'น้ำ 4 ล./ไร่',fert:{fert_npk:'NPK 15-15-15 อัตรา 40 มล./น้ำ 20 ล.',fert_k:'ปุ๋ยน้ำ K สูง 25 มล./น้ำ 20 ล.',micro:'Mg+B 20 มล./น้ำ 20 ล.'}},
+    {id:'bearing',lbl:'ระยะให้ผลผลิต',days:'4+ ปี',spd:6.0,h:3.0,vol:4.0,drop:'medium',note:'น้ำ 4 ล./ไร่',fert:{fert_k:'ปุ๋ยน้ำ K สูง 35 มล./น้ำ 20 ล.',micro:'Mg+B+Zn 20 มล./น้ำ 20 ล.',calcium:'Ca-B 25 มล./น้ำ 20 ล.'}}
+  ],
+  other_fruit:[
+    {id:'bud',lbl:'ระยะใบอ่อน/ตาดอก',days:'หลังตัดแต่ง',spd:3.0,h:1.5,vol:15.0,drop:'fine',note:'น้ำ 15 ล./ไร่ Orchard Mode บินต่ำช้า',fert:{insect:'สารป้องกันเพลี้ยไฟ 20 มล./น้ำ 20 ล.',fert_n:'ปุ๋ยน้ำ N สูง 35 มล./น้ำ 20 ล.',hormone:'ออคซิน 10 มล./น้ำ 20 ล.',amino:'กรดอะมิโน 25 มล./น้ำ 20 ล.'}},
+    {id:'fruit_set_o',lbl:'ระยะติดผล/ผลขยาย',days:'หลังดอกบาน',spd:3.5,h:2.0,vol:15.0,drop:'fine',note:'น้ำ 15 ล./ไร่ Ca สูง',fert:{fert_k:'ปุ๋ยน้ำ K สูง 35 มล./น้ำ 20 ล.',calcium:'Ca-B 50 มล./น้ำ 20 ล.',hormone:'ไซโตไคนิน 10 มล./น้ำ 20 ล.'}},
+    {id:'ripening_o',lbl:'ระยะผลสุก/ใกล้เก็บ',days:'1–2 เดือนก่อนเก็บ',spd:4.0,h:2.0,vol:12.0,drop:'medium',note:'น้ำ 12 ล./ไร่ หยุดสารตกค้าง 14 วัน',fert:{fert_k:'ปุ๋ยน้ำ K 25 มล./น้ำ 20 ล.'}}
+  ],
+  veg:[
+    {id:'sprout_v',lbl:'ระยะงอก/กล้า',days:'0–14 วัน',spd:4.0,h:1.5,vol:3.0,drop:'fine',note:'น้ำ 3 ล./ไร่ ต้นอ่อน บินต่ำช้า',fert:{fert_n:'ปุ๋ยน้ำ N สูง 20 มล./น้ำ 20 ล.',hormone:'ออคซิน 8 มล./น้ำ 20 ล.'}},
+    {id:'grow_v',lbl:'ระยะเจริญเติบโต',days:'14–45 วัน',spd:5.0,h:2.0,vol:4.0,drop:'medium',note:'น้ำ 4 ล./ไร่ NPK ครบ',fert:{fert_npk:'NPK สูตรเสมอ 25 มล./น้ำ 20 ล.',amino:'กรดอะมิโน 20 มล./น้ำ 20 ล.',micro:'ธาตุรอง 15 มล./น้ำ 20 ล.'}},
+    {id:'harvest_v',lbl:'ระยะเก็บเกี่ยว',days:'45+ วัน',spd:5.5,h:2.0,vol:3.0,drop:'medium',note:'น้ำ 3 ล./ไร่ หยุดสารตกค้าง 7–14 วัน',fert:{fert_k:'ปุ๋ยน้ำ K สูง 20 มล./น้ำ 20 ล.'}}
+  ]
+};
+
+var STYPE_N={insect:'ยาฆ่าแมลง',fungus:'ยาเชื้อรา',weed:'ยาฆ่าหญ้า',mite:'ยาไร',fert_n:'ปุ๋ยน้ำ N',fert_p:'ปุ๋ยน้ำ P',fert_k:'ปุ๋ยน้ำ K',fert_npk:'ปุ๋ยน้ำ NPK',hormone:'ฮอร์โมน',amino:'กรดอะมิโน',calcium:'Ca-B',micro:'ธาตุรอง'};
+var HA2R=6.25,RM2=1600;
+var SEL='T30',SMODE='spray',SPRAY_MODE='reco',SPREAD_M='rate',CONV_MODE='ml20';
+
+// -------- BUILD MODEL GRID --------
+function mkSvg(k){
+  var c=DRONE_COLORS[k]||'#16a34a';
+  return '<svg class="drone-ico" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="9" r="5.5" stroke="'+c+'" stroke-width="1.8"/><circle cx="36" cy="9" r="5.5" stroke="'+c+'" stroke-width="1.8"/><circle cx="8" cy="35" r="5.5" stroke="'+c+'" stroke-width="1.8"/><circle cx="36" cy="35" r="5.5" stroke="'+c+'" stroke-width="1.8"/><circle cx="8" cy="8" r="8.5" stroke="'+c+'" stroke-width=".7" stroke-dasharray="2 1.5"/><circle cx="36" cy="8" r="8.5" stroke="'+c+'" stroke-width=".7" stroke-dasharray="2 1.5"/><circle cx="8" cy="36" r="8.5" stroke="'+c+'" stroke-width=".7" stroke-dasharray="2 1.5"/><circle cx="36" cy="36" r="8.5" stroke="'+c+'" stroke-width=".7" stroke-dasharray="2 1.5"/><line x1="8" y1="9" x2="22" y2="22" stroke="'+c+'" stroke-width="1.5"/><line x1="36" y1="9" x2="22" y2="22" stroke="'+c+'" stroke-width="1.5"/><line x1="8" y1="35" x2="22" y2="22" stroke="'+c+'" stroke-width="1.5"/><line x1="36" y1="35" x2="22" y2="22" stroke="'+c+'" stroke-width="1.5"/><rect x="16" y="16" width="12" height="12" rx="3" fill="'+c+'" fill-opacity=".18" stroke="'+c+'" stroke-width="1.3"/><text x="22" y="24.5" text-anchor="middle" fill="'+c+'" font-size="5.5" font-family="monospace" font-weight="600">'+k+'</text></svg>';
+}
+
+function buildGrid(){
+  var g=document.getElementById('MG');g.innerHTML='';
+  Object.keys(DR).forEach(function(k){
+    var d=DR[k];
+    var b=document.createElement('div');
+    b.className='model-card'+(k===SEL?' active':'');
+    b.innerHTML=(d.tag?'<span class="m-badge '+(d.tag==='new'?'new':'th')+'">'+(d.tag==='new'?'NEW':'TH')+'</span>':'')+
+      mkSvg(k)+
+      '<div class="m-name">'+d.name+'</div>'+
+      '<div class="m-cap">'+d.tank+'L</div>';
+    (function(key){b.onclick=function(){selectModel(key);};})(k);
+    g.appendChild(b);
+  });
+}
+
+function selectModel(k){
+  SEL=k;buildGrid();
+  var d=DR[k];
+  sT('sb_tank',d.tank);sT('sb_flow',d.flow4||d.flow2);sT('sb_wid',d.wid);
+  sT('sb_spd',d.spd);sT('sb_spr',d.spr_kg||'—');sT('sb_eff',Math.round(d.eff_ha*HA2R));
+  var ub=document.getElementById('UB');
+  if(d.sys==='NEW'){ub.className='unit-pill new-sys';ub.innerHTML='📱 Agras App: ตั้งค่าเป็น <strong>L/ha</strong> (centrifugal impeller pump)';}
+  else{ub.className='unit-pill old-sys';ub.innerHTML='🎮 รีโมท: ตั้ง <strong>Flow Rate L/min</strong> (pressure/plunger pump)';}
+  var ns=document.getElementById('snozzle');
+  if(ns)ns.innerHTML='<option value="2">2 หัว — '+d.flow2+' L/min</option>'+(d.flow4?'<option value="4">4 หัว — '+d.flow4+' L/min</option>':'');
+  sV('sspd',d.spd);sV('spspd',d.spd);
+  sT('s_spd_h','แนะนำ '+d.spd+'–'+d.spd_max+' ม./วิ');
+  sT('sp_spd_h','แนะนำ '+d.spd+'–'+d.spd_max+' ม./วิ');
+  sV('c_lr_tank',d.tank);sV('c_mr_tank',d.tank);
+  updateStageReco();
+}
+
+// -------- CROP / STAGE --------
+function onCropChange(){
+  var crop=gS('scrop'),stages=STAGES[crop]||[];
+  var sel=document.getElementById('sstage');
+  sel.innerHTML='<option value="">— เลือกระยะ —</option>';
+  stages.forEach(function(s){
+    var o=document.createElement('option');
+    o.value=s.id;o.textContent=s.lbl+' ('+s.days+')';sel.appendChild(o);
+  });
+  sV('sdays','');sT('days_hint','กรอกอายุเพื่อให้ระบบเลือกระยะให้อัตโนมัติ');
+  updateStageReco();
+}
+
+function onDaysChange(){
+  var days=parseFloat(document.getElementById('sdays').value);
+  if(isNaN(days)||days<0)return;
+  var crop=gS('scrop'),map={
+    rice:{seedling:14,tiller:50,panicle:75,heading:90,ripening:999},
+    sugarcane:{germination:30,tillering:90,grandgrowth:240,maturation:999},
+    corn:{seedling_c:21,vegetative:45,tassel:65,grain_fill:90,mature_c:999},
+    cassava:{establish:30,tuber_init:120,bulking:270,harvest_cs:999}
+  };
+  var m=map[crop];if(!m){sT('days_hint','เลือกระยะด้วยตนเองสำหรับพืชชนิดนี้');return;}
+  var ids=Object.keys(m),best=ids[ids.length-1];
+  for(var i=0;i<ids.length;i++){if(days<=m[ids[i]]){best=ids[i];break;}}
+  sV('sstage',best);sT('days_hint','อายุ '+Math.round(days)+' วัน → เลือกระยะอัตโนมัติแล้ว ✓');
+  onStageChange();
+}
+
+function onStageChange(){updateStageReco();}
+function onTypeChange(){updateFertReco();}
+
+function getStage(){
+  var crop=gS('scrop'),id=gS('sstage');if(!id)return null;
+  var _stages=STAGES[crop]||[];
+  for(var _i=0;_i<_stages.length;_i++){if(_stages[_i].id===id)return _stages[_i];}
+  return null;
+}
+
+function updateStageReco(){
+  var st=getStage();
+  if(!st){sT('rc_spd','—');sT('rc_h','—');sT('rc_vol','—');sT('rc_drop','—');sT('rc_note','เลือกพืชและระยะเพื่อดูค่าแนะนำ');hide('fert_reco');return;}
+  sT('rc_spd',st.spd);sT('rc_h',st.h);sT('rc_vol',st.vol);
+  sT('rc_drop',st.drop==='fine'?'Fine':st.drop==='coarse'?'Coarse':'Medium');
+  sT('rc_note','('+st.days+') '+st.note);
+  updateFertReco();
+}
+
+function updateFertReco(){
+  var st=getStage(),stype=gS('stype'),box=document.getElementById('fert_reco');
+  if(!st||!stype){hide('fert_reco');return;}
+  var rec=st.fert&&st.fert[stype];
+  if(rec){box.innerHTML='<strong>💊 '+( STYPE_N[stype]||stype)+' — อัตราแนะนำ:</strong><br>'+rec;show('fert_reco');}
+  else{
+    var isPest=(['insect','fungus','weed','mite'].indexOf(stype)>=0);
+    box.innerHTML=isPest?'✓ ใช้ได้ในระยะนี้ — ปฏิบัติตามฉลาก':'⚠️ ไม่แนะนำ '+( STYPE_N[stype]||stype)+' ในระยะนี้';
+    show('fert_reco');
+  }
+}
+
+function setSprayMode(m){
+  SPRAY_MODE=m;
+  tog('stog-reco','stog-manual',m==='reco');
+  document.getElementById('reco-panel').style.display=m==='reco'?'':'none';
+  document.getElementById('manual-panel').style.display=m==='manual'?'':'none';
+}
+
+// -------- SPRAY CALC --------
+function calcSpray(){
+  var d=DR[SEL],area=gN('sa');
+  if(!area){alert('กรุณากรอกขนาดแปลง');return;}
+  var speed,height,droplet,vol,rate,nozzle=2;
+  if(SPRAY_MODE==='reco'){
+    var st=getStage();if(!st){alert('กรุณาเลือกระยะการเจริญเติบโต');return;}
+    speed=st.spd;height=st.h;droplet=st.drop;vol=st.vol;
+    rate=gN('srate',0)||null;
+    if(!rate)rate=null; // will show as "ตามแนะนำ"
+    var w=gN('swater',0);if(!w)w=st.vol*0.85; // ~85% water, rest chemical
+    if(!gN('srate',0)){rate=st.vol*0.08;} // default ~8% chemical of total volume
+    vol=gN('swater',0)||st.vol;
+    if(gN('srate',0)>0)rate=gN('srate',0); else rate=null;
+    vol=gN('swater',0)||0;
+    if(!vol)vol=st.vol;
+    if(!rate)rate=vol*0.05; // default 5% of water as chemical
+  } else {
+    speed=gN('sspd',d.spd);height=parseFloat(gS('sheight')||'2');
+    droplet=gS('sdrop');nozzle=parseInt(gS('snozzle')||'2');
+    vol=gN('m_water',3);rate=gN('m_rate',0)||vol*0.05;
+  }
+  var sprprice=gN('sprice',0);
+  var flowRate=(nozzle===4&&d.flow4)?d.flow4:d.flow2;
+  var volRai=vol;var totalVol=area*volRai;var totalChem=area*rate;
+  var opW=d.wid;if(height<=1.5)opW=d.wid*0.85;else if(height>=3)opW=Math.min(d.wid*1.1,d.wid+1.5);
+  var effSpd=speed;
+  var apmRaw=(speed*60*opW)/RM2;
+  if(apmRaw*volRai>flowRate)effSpd=Math.min((flowRate*RM2)/(60*opW*volRai),d.spd_max);
+  var apm=(effSpd*60*opW)/RM2;
+  var actFlow=apm*volRai;var flyMin=area/apm;
+  var fills=Math.ceil(totalVol/(d.tank*0.9));var totalMin=flyMin+fills*3;
+  var batN=Math.ceil(flyMin/(d.bat*0.85));var raiHr=Math.round(apm*60);
+  var volHa=volRai*HA2R;var rateHa=rate*HA2R;
+  var costC=sprprice>0?totalChem*sprprice:0;
+  var warn=effSpd<speed*0.8;
+  var dropMap={fine:'Fine 50–150μm',medium:'Medium 150–250μm',coarse:'Coarse 250–400μm'};
+  // Setting rows
+  var setR='';
+  if(d.sys==='NEW'){
+    setR+='<div class="srow"><div class="sk">📱 Volume/Area (Agras App)</div><div class="sv amber">'+fm(volHa)+' L/ha</div></div>';
+    setR+='<div class="srow"><div class="sk">— ยอดรวม (สาร+น้ำ)</div><div class="sv blue">'+fm(volHa)+' L/ha</div></div>';
+  }else{
+    setR+='<div class="srow"><div class="sk">🎮 Flow Rate (รีโมท)</div><div class="sv amber">'+fm(actFlow)+' L/min</div></div>';
+  }
+  setR+='<div class="srow"><div class="sk">ความเร็ว (Speed)</div><div class="sv">'+fm(effSpd)+' m/s</div></div>';
+  setR+='<div class="srow"><div class="sk">ความสูง (Height)</div><div class="sv">'+height+' m</div></div>';
+  setR+='<div class="srow"><div class="sk">ความกว้างพ่น (Route Spacing)</div><div class="sv">'+fm(opW)+' m</div></div>';
+  setR+='<div class="srow"><div class="sk">ขนาดหยด (Droplet)</div><div class="sv amber">'+(dropMap[droplet]||droplet)+'</div></div>';
+  if (!isNaN(windVal) && windVal > 0) {
+    setR+='<div class="srow"><div class="sk">🌬️ ความเร็วลมขณะบิน</div><div class="sv '+(windVal>5?'red':windVal>4?'amber':'')+'">'+windVal+' ม./วิ</div></div>';
+  }
+  setR+='<div class="srow"><div class="sk">ประสิทธิภาพ</div><div class="sv">'+raiHr+' ไร่/ชม.</div></div>';
+  // Include wind in result
+  var windVal = parseFloat(document.getElementById('swind').value);
+  var windNote = '';
+  if (!isNaN(windVal) && windVal > 0) {
+    if (windVal > 6) windNote = '<div class="wbox"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg><span>🛑 ลม ' + windVal + ' ม./วิ — เกินมาตรฐานปลอดภัย ควรหยุดงาน</span></div>';
+    else if (windVal > 5) windNote = '<div class="wbox"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg><span>⚠️ ลม ' + windVal + ' ม./วิ — เสี่ยง drift สูง ควรใช้ Coarse droplet และบินต่ำ 1.5 ม.</span></div>';
+    else if (windVal > 4) windNote = '<div class="wbox"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg><span>💨 ลม ' + windVal + ' ม./วิ — ใช้ Coarse droplet ลดความสูงลง</span></div>';
+  }
+  var stageInfo='';
+  if(SPRAY_MODE==='reco'){
+    var st2=getStage();if(st2){
+      stageInfo='<div class="reco-panel" style="margin-bottom:10px"><h4>📋 ระยะที่เลือก</h4><div class="reco-note">'+st2.lbl+' ('+st2.days+')<br>'+st2.note+'</div>';
+      var fr=st2.fert&&st2.fert[gS('stype')];if(fr)stageInfo+='<div class="fert-box" style="margin-top:8px"><strong>💊 อัตราแนะนำ:</strong> '+fr+'</div>';
+      stageInfo+='</div>';
+    }
+  }
+  var html=windNote+'<div class="result-header"><h3>💧 ผลคำนวณพ่น — '+d.name+'</h3><div class="rsub">แปลง '+area+' ไร่ · น้ำ '+volRai+' ล./ไร่ · สาร '+fm(rate,3)+' ล./ไร่</div></div>';
+  if(warn)html+='<div class="wbox"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg><span>ปั๊มไม่พอ: ปรับความเร็วเหลือ <strong>'+fm(effSpd)+' ม./วิ</strong></span></div>';
+  html+=stageInfo;
+  html+='<div class="r4grid"><div class="rcard green"><div class="rlbl">น้ำยาทั้งหมด</div><div class="rnum">'+Math.ceil(totalVol)+'</div><div class="runit">ลิตร (สาร '+Math.ceil(totalChem)+' + น้ำ '+Math.ceil(area*(volRai-rate))+')</div></div>';
+  html+='<div class="rcard amber"><div class="rlbl">รอบเติมถัง</div><div class="rnum">'+fills+'</div><div class="runit">รอบ (ถัง '+d.tank+'L)</div></div>';
+  html+='<div class="rcard blue"><div class="rlbl">เวลาบิน</div><div class="rnum">'+fm(flyMin)+'</div><div class="runit">นาที (รวม '+Math.round(totalMin)+' น.)</div></div>';
+  html+='<div class="rcard"><div class="rlbl">แบตเตอรี่</div><div class="rnum">'+batN+'</div><div class="runit">ก้อน ('+d.bat+' น./ก้อน)</div></div></div>';
+  html+='<div class="settings-panel"><h4>⚙️ '+d.rdesc+'</h4>'+setR+'</div>';
+  if(costC>0)html+='<div class="settings-panel"><h4>💰 ต้นทุน</h4><div class="srow"><div class="sk">สารรวม '+Math.ceil(totalChem)+' ล. × '+sprprice+' บาท</div><div class="sv amber">'+costC.toLocaleString()+' บาท</div></div><div class="srow"><div class="sk">ต่อไร่</div><div class="sv amber">'+fm(costC/area)+' บาท/ไร่</div></div></div>';
+  html+='<div class="tips-box"><h4>💡 คำแนะนำ</h4>'+buildTips(gS('stype'),gS('scrop'),d)+'</div>';
+  html+='<button class="reset-btn" onclick="clearResult(\'spray-result\')">↺ ล้างผล</button>';
+  document.getElementById('spray-result').innerHTML=html;
+  document.getElementById('spray-result').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function buildTips(stype,crop,d){
+  var tips=[];
+  if(stype==='weed')tips.push('ยาฆ่าหญ้า: ใช้หยดหยาบ (Coarse 250–400μm) ลดการล่อง พ่นเช้าตรู่/เย็น ลม <3 ม./วิ');
+  if(stype==='fungus')tips.push('ยาเชื้อรา: หยดละเอียด (Fine 50–150μm) บินช้า 1–2 ม./วิ ให้คลุมผิวใบดี');
+  if(stype==='insect')tips.push('ยาแมลง: พ่นเช้าตรู่/เย็น หลีกเลี่ยง 09:00–15:00 ลดผลต่อแมลงผสมเกสร');
+  if(['fert_n','fert_p','fert_k','fert_npk'].indexOf(stype)>=0)tips.push('ปุ๋ยน้ำทางใบ: ปากใบ 70% อยู่ใต้ใบ — พ่นให้ถึงใต้ใบ พ่นเช้า/เย็น หลีกเลี่ยงแดดจัด');
+  if(stype==='hormone')tips.push('ฮอร์โมน: ห้ามใช้เกินอัตรา GA3 ต้องละลายในน้ำ pH 6–7 เท่านั้น');
+  if(stype==='amino')tips.push('กรดอะมิโน: ใช้ได้ทุกระยะ ช่วยฟื้นตัวหลังเครียด เพิ่มการดูดธาตุอาหาร');
+  if(stype==='calcium')tips.push('Ca-B: พ่นตั้งแต่ผลอ่อน อย่าใช้คู่กับยาฆ่าแมลงกลุ่มฟอสเฟต');
+  if(crop==='durian'||crop==='longan'||crop==='other_fruit')tips.push('ไม้ผล: ใช้ Orchard Mode ความสูง 1.5–2 ม. บินช้า ให้น้ำซึมผ่านทรงพุ่มดี');
+  if(d.sys==='NEW')tips.push('Agras App: ตั้ง Volume/Area (L/ha) → ปรับ Speed → App คำนวณ Flow Rate อัตโนมัติ');
+  if(d.sys==='OLD')tips.push('รีโมท T20/T30: ตั้ง Flow Rate (L/min) โดยตรง — ตรวจสอบค่าจากช่องค่าตั้ง');
+  tips.push('ตรวจลมทุกครั้งก่อนบิน ลม >5 ม./วิ ควรหยุดงาน');
+  tips.push('กำหนด headland buffer 2–3 ม. รอบขอบแปลงก่อนเริ่ม mission');
+  return tips.map(function(t){return'<div class="tip">'+t+'</div>';}).join('');
+}
+
+// -------- LABEL CONVERTER --------
+function setConvMode(m){
+  CONV_MODE=m;
+  ['ml20','lirai','mlrai'].forEach(function(x){
+    document.getElementById('ct-'+x).className='conv-tab'+(m===x?' active':'');
+    document.getElementById('conv-'+x).style.display=m===x?'':'none';
+  });
+}
+
+function calcLabel(mode){
+  var res=document.getElementById('label-result');
+  if(mode==='ml20'){
+    var mlPer20=gN('c_ml');var raiPer20=gN('c_rai20');var droneW=gN('c_drone_water');var area=gN('c_area');
+    if(!mlPer20||!raiPer20||!droneW){alert('กรุณากรอกข้อมูลให้ครบ');return;}
+    // L of chemical per rai
+    var lPerRai=(mlPer20/1000)/raiPer20; // liters/rai
+    // ml per droneW liters
+    var mlPerDroneVol=(lPerRai*droneW)*1000; // ml in droneW liters
+    // total volumes if area given
+    var totalChemL=area?lPerRai*area:null;
+    var totalWaterL=area?droneW*area:null;
+    res.innerHTML=buildConvResult({mode:'ml20',mlPer20,raiPer20,droneW,area,lPerRai,mlPerDroneVol,totalChemL,totalWaterL});
+  } else if(mode==='lirai'){
+    var lr=gN('c_lr');var lrW=gN('c_lr_water');var lrA=gN('c_lr_area');var lrT=gN('c_lr_tank');
+    if(!lr||!lrW){alert('กรุณากรอกข้อมูลให้ครบ');return;}
+    var totalChem2=lrA?lr*lrA:null;var totalWater2=lrA?lrW*lrA:null;
+    var raiPerTank=lrT?(lrT/lrW):null;var chemPerTank=raiPerTank?(lr*raiPerTank):null;
+    res.innerHTML=buildConvResult({mode:'lirai',lr,lrW,lrA,lrT,totalChem2,totalWater2,raiPerTank,chemPerTank});
+  } else if(mode==='mlrai'){
+    var mr=gN('c_mr');var mrW=gN('c_mr_water');var mrA=gN('c_mr_area');var mrT=gN('c_mr_tank');
+    if(!mr||!mrW){alert('กรุณากรอกข้อมูลให้ครบ');return;}
+    var lrVal=mr/1000;
+    var totalChem3=mrA?lrVal*mrA:null;var totalWater3=mrA?mrW*mrA:null;
+    var rPT=mrT?(mrT/mrW):null;var cPT=rPT?(lrVal*rPT*1000):null;
+    res.innerHTML=buildConvResult({mode:'mlrai',mr,mrW,mrA,mrT,totalChem3,totalWater3,rPT,cPT,lrVal});
+  }
+  res.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function buildConvResult(p){
+  var html='<div class="card" style="margin-top:12px">';
+  html+='<div class="conv-result-title">✅ ผลการแปลง</div>';
+
+  if(p.mode==='ml20'){
+    html+='<div class="srow"><div class="sk">อัตราสารต่อไร่ (คงที่ตลอด)</div><div class="sv" style="color:var(--danger);font-size:15px">'+fm(p.lPerRai*1000,2)+' มล./ไร่</div></div>';
+    html+='<div class="srow"><div class="sk">ผสมในน้ำ '+p.droneW+' ล./ไร่ ของโดรน</div><div class="sv" style="font-size:18px;color:var(--brand)">'+fm(p.mlPerDroneVol,1)+' มล. / '+p.droneW+' ล. น้ำ</div></div>';
+    html+='<div class="srow"><div class="sk">เปรียบเทียบ: ฉลาก</div><div class="sv">'+p.mlPer20+' มล. / น้ำ 20 ล. (สำหรับพ่นแบบคน)</div></div>';
+    if(p.area){
+      html+='<hr style="border:none;border-top:1px solid var(--border);margin:10px 0">';
+      html+='<div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">📦 สำหรับแปลง '+p.area+' ไร่</div>';
+      html+='<div class="srow"><div class="sk">สารที่ต้องเตรียม</div><div class="sv" style="color:var(--brand);font-size:16px">'+fm(p.totalChemL*1000,0)+' มล. ('+fm(p.totalChemL,3)+' ล.)</div></div>';
+      html+='<div class="srow"><div class="sk">น้ำที่ต้องเตรียม</div><div class="sv">'+fm(p.totalWaterL,0)+' ลิตร</div></div>';
+    }
+    html+='<div style="background:#f0fdf4;border-radius:6px;padding:10px;margin-top:10px;font-size:11px;color:var(--brand-deep)">';
+    html+='<strong>💡 วิธีผสม:</strong> เทสาร '+fm(p.mlPerDroneVol,1)+' มล. ลงถัง → เติมน้ำให้ครบ '+p.droneW+' ล. ต่อ 1 ไร่<br>';
+    html+='<strong>⚠️ ห้าม</strong>ผสมตามฉลากตรงๆ ('+p.mlPer20+' มล./น้ำ 20 ล.) เพราะน้ำโดรนน้อยกว่ามาก</div>';
+  }
+  else if(p.mode==='lirai'){
+    html+='<div class="srow"><div class="sk">อัตราสารต่อไร่ (คงที่)</div><div class="sv" style="color:var(--danger);font-size:15px">'+fm(p.lr*1000,0)+' มล./ไร่ ('+fm(p.lr,3)+' ล./ไร่)</div></div>';
+    html+='<div class="srow"><div class="sk">น้ำที่โดรนใช้</div><div class="sv">'+p.lrW+' ล./ไร่</div></div>';
+    if(p.raiPerTank){html+='<div class="srow"><div class="sk">ถัง '+p.lrT+'L บินได้</div><div class="sv">'+fm(p.raiPerTank,1)+' ไร่/ถัง</div></div>';html+='<div class="srow"><div class="sk">ยาต่อถัง</div><div class="sv" style="color:var(--brand);font-size:16px">'+fm(p.chemPerTank*1000,0)+' มล. ('+fm(p.chemPerTank,3)+' ล.)</div></div>';}
+    if(p.lrA){html+='<hr style="border:none;border-top:1px solid var(--border);margin:10px 0">';html+='<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">แปลง '+p.lrA+' ไร่</div>';html+='<div class="srow"><div class="sk">สารรวม</div><div class="sv" style="color:var(--brand)">'+fm(p.totalChem2*1000,0)+' มล. ('+fm(p.totalChem2,2)+' ล.)</div></div>';html+='<div class="srow"><div class="sk">น้ำรวม</div><div class="sv">'+fm(p.totalWater2,0)+' ล.</div></div>';}
+  }
+  else if(p.mode==='mlrai'){
+    html+='<div class="srow"><div class="sk">อัตราสารต่อไร่ (คงที่)</div><div class="sv" style="color:var(--danger);font-size:15px">'+fm(p.mr,1)+' มล./ไร่</div></div>';
+    html+='<div class="srow"><div class="sk">น้ำที่โดรนใช้</div><div class="sv">'+p.mrW+' ล./ไร่</div></div>';
+    if(p.rPT){html+='<div class="srow"><div class="sk">ถัง '+p.mrT+'L บินได้</div><div class="sv">'+fm(p.rPT,1)+' ไร่/ถัง</div></div>';html+='<div class="srow"><div class="sk">ยาต่อถัง</div><div class="sv" style="color:var(--brand);font-size:16px">'+fm(p.cPT,0)+' มล.</div></div>';}
+    if(p.mrA){html+='<hr style="border:none;border-top:1px solid var(--border);margin:10px 0">';html+='<div class="srow"><div class="sk">สารรวม '+p.mrA+' ไร่</div><div class="sv" style="color:var(--brand)">'+fm(p.totalChem3*1000,0)+' มล.</div></div>';html+='<div class="srow"><div class="sk">น้ำรวม</div><div class="sv">'+fm(p.totalWater3,0)+' ล.</div></div>';}
+  }
+  html+='</div>';
+  return html;
+}
+
+// -------- SPREAD CALC --------
+function onSpMat(){
+  var mat=gS('spmat');
+  var h={urea:'แนะนำ 10–25 กก./ไร่',npk:'แนะนำ 15–30 กก./ไร่',rice_seed:'แนะนำ 10–15 กก./ไร่',other_seed:'ตามคำแนะนำพันธุ์',lime:'50–200 กก./ไร่',micro:'10–50 กก./ไร่'};
+  sT('sp_hint',h[mat]||'');
+}
+
+function setSpreadMode(m){
+  SPREAD_M=m;
+  tog('sm-rate','sm-bag',m==='rate');
+  document.getElementById('fr-rate').style.display=m==='rate'?'':'none';
+  document.getElementById('fr-bag').style.display=m==='bag'?'':'none';
+}
+
+function calcSpread(){
+  var d=DR[SEL],area=gN('spa'),bagW=parseFloat(gS('spbagw')||'50');
+  var mat=gS('spmat'),sppr=gN('spprice',0),wid=gN('spwid',7);
+  var speed=gN('spspd',d.spd),height=gN('spheight',3);
+  if(!area){alert('กรุณากรอกขนาดแปลง');return;}
+  if(d.spr_kg===0){alert(d.name+' ไม่มีระบบหว่าน');return;}
+  var rate,totalKg,bagCount,modePill;
+  if(SPREAD_M==='bag'){
+    var bags=gN('spbags',0);if(!bags){alert('กรุณากรอกจำนวนกระสอบ');return;}
+    bagCount=bags;totalKg=bags*bagW;rate=totalKg/area;
+    modePill='<div class="bag-pill">📦 '+bags+' กระสอบ × '+bagW+' กก. → อัตรา '+fm(rate)+' กก./ไร่'+(rate>60?' ⚠️ สูงผิดปกติ, ตรวจสอบด้วย':'')+'</div>';
+  }else{
+    rate=gN('sprate',25);if(!rate){alert('กรุณากรอกอัตราหว่าน');return;}
+    totalKg=area*rate;bagCount=Math.ceil(totalKg/bagW);
+    modePill='<div class="bag-pill">📐 '+rate+' กก./ไร่ × '+area+' ไร่ = ต้องใช้ '+bagCount+' กระสอบ</div>';
+  }
+  var tkFill=d.spr_kg*0.9,fills=Math.ceil(totalKg/tkFill);
+  var apm=(speed*60*wid)/RM2,flyMin=area/apm,totalMin=flyMin+fills*3;
+  var batN=Math.ceil(flyMin/(d.bat*0.85)),raiHr=Math.round(apm*60);
+  var kgHa=rate*HA2R,kgPM=apm*rate,cost=sppr>0?bagCount*sppr:0;
+  var rows='';var rem=totalKg;
+  for(var i=1;i<=fills;i++){var load=Math.min(tkFill,rem),b2=Math.ceil(load/bagW);
+    rows+='<div class="chem-row"><div class="cn">'+i+'</div><div>'+fm(load,0)+' กก.</div><div>'+b2+' กระสอบ</div><div style="color:var(--text3);font-size:10px">'+fm(load/d.spr_kg*100,0)+'%</div></div>';
+    rem-=load;if(rem<=0)break;}
+  var sR='';
+  if(d.sys==='NEW')sR+='<div class="srow"><div class="sk">📱 Spread Rate (Agras App)</div><div class="sv amber">'+fm(kgHa,1)+' kg/ha</div></div>';
+  else sR+='<div class="srow"><div class="sk">🎮 Spread Rate (รีโมท)</div><div class="sv amber">'+fm(kgPM,2)+' กก./นาที</div></div>';
+  sR+='<div class="srow"><div class="sk">ความกว้างหว่าน</div><div class="sv">'+wid+' m</div></div>';
+  sR+='<div class="srow"><div class="sk">ความสูง</div><div class="sv">'+height+' m</div></div>';
+  sR+='<div class="srow"><div class="sk">ความเร็ว</div><div class="sv">'+fm(speed)+' m/s</div></div>';
+  sR+='<div class="srow"><div class="sk">ประสิทธิภาพ</div><div class="sv">'+raiHr+' ไร่/ชม.</div></div>';
+  sR+='<div class="srow"><div class="sk">แบตเตอรี่</div><div class="sv">'+batN+' ก้อน</div></div>';
+  // Wind integration in spread result
+  var spWindVal=parseFloat(document.getElementById('spwind')?document.getElementById('spwind').value:0)||0;
+  var windWarnSpread='';
+  var routeSpacingAdj=0;
+  var rpmAdjSpread=0;
+  if(spWindVal>0){
+    var rpmMainSpread=getRPMForZone('main');
+    var rpmHL_Spread=getRPMForZone('headland');
+    var rpmAdjustedMain=spWindVal>2?Math.min(1500,rpmMainSpread+Math.round((spWindVal-2)*50)):rpmMainSpread;
+    var rpmAdjustedHL=spWindVal>2?Math.min(1500,rpmHL_Spread+Math.round((spWindVal-2)*30)):rpmHL_Spread;
+    var routeAdj=Math.max(3,wid+(spWindVal>3?-1.0:spWindVal>2?-0.5:0));
+    sR+='<div class="srow"><div class="sk">🌬️ ลม</div><div class="sv '+(spWindVal>5?'red':spWindVal>3?'amber':'')+'">'+spWindVal+' ม./วิ</div></div>';
+    sR+='<div class="srow"><div class="sk">RPM จาน (กลางแปลง+ลม)</div><div class="sv amber">'+rpmAdjustedMain+' RPM</div></div>';
+    sR+='<div class="srow"><div class="sk">RPM จาน (ขอบแปลง+ลม)</div><div class="sv" style="color:var(--warn)">'+rpmAdjustedHL+' RPM</div></div>';
+    sR+='<div class="srow"><div class="sk">Route Spacing (ปรับตามลม)</div><div class="sv '+(routeAdj<wid?'amber':'')+'">'+fm(routeAdj,1)+' ม.'+(routeAdj<wid?' (ลดจาก '+wid+' ม.)':'')+'</div></div>';
+    if(spWindVal>5){windWarnSpread='<div class="wbox">🛑 <strong>ลม '+spWindVal+' ม./วิ — อันตราย!</strong> เม็ดปุ๋ยจะกระเด็นออกนอกแปลง ควรหยุดงาน</div>';}
+    else if(spWindVal>3){windWarnSpread='<div class="wbox">💨 <strong>ลม '+spWindVal+' ม./วิ</strong> — ลด Route spacing เหลือ '+fm(routeAdj,1)+' ม. เพิ่ม RPM +'+Math.round((spWindVal-2)*50)+' | บินขวางลม</div>';}
+    else if(spWindVal>2){windWarnSpread='<div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:9px 12px;margin-bottom:10px;font-size:11px;color:#854d0e">🌬️ ลม '+spWindVal+' ม./วิ — ปรับ RPM +'+Math.round((spWindVal-2)*50)+' Route spacing -0.5 ม.</div>';}
+  }
+  var mg={urea:'ยูเรีย: เม็ด 2–4 มม. gate ปานกลาง feeder กลาง',npk:'NPK: เม็ด 2–5 มม. gate กว้าง feeder ใหญ่',rice_seed:'เมล็ดข้าว: gate กว้างสุด บินเร็วสูง',other_seed:'Calibrate ก่อนใช้ เม็ดเล็ก gate แคบ',lime:'ปูนขาว: ระวังอุดตัน ล้างถังทันที',micro:'ปุ๋ยอินทรีย์: ความหนาแน่นต่ำ Calibrate ก่อน'};
+  var html=windWarnSpread+'<div class="result-header"><h3>🌾 ผลคำนวณหว่าน — '+d.name+'</h3><div class="rsub">แปลง '+area+' ไร่</div></div>';
+  html+=modePill;
+  html+='<div class="r4grid"><div class="rcard green"><div class="rlbl">วัสดุทั้งหมด</div><div class="rnum">'+Math.ceil(totalKg)+'</div><div class="runit">กิโลกรัม</div></div>';
+  html+='<div class="rcard amber"><div class="rlbl">จำนวนกระสอบ</div><div class="rnum">'+bagCount+'</div><div class="runit">กระสอบ ('+bagW+' กก./กระสอบ)</div></div>';
+  html+='<div class="rcard blue"><div class="rlbl">รอบเติมถัง</div><div class="rnum">'+fills+'</div><div class="runit">รอบ (ถัง '+d.spr_kg+' กก./รอบ)</div></div>';
+  html+='<div class="rcard"><div class="rlbl">เวลาทั้งหมด</div><div class="rnum">'+Math.round(totalMin)+'</div><div class="runit">นาที (~'+fm(totalMin/60)+' ชม.)</div></div></div>';
+  html+='<div class="plan-table"><div style="background:var(--surface2);padding:9px 14px;font-size:10px;font-weight:700;color:var(--text2);display:grid;grid-template-columns:40px 1fr 1fr 1fr;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)"><div>รอบ</div><div>น้ำหนัก</div><div>กระสอบ</div><div>%ถัง</div></div>'+rows+'</div>';
+  html+='<div class="settings-panel"><h4>⚙️ '+d.rdesc+'</h4>'+sR+'</div>';
+  if(cost>0)html+='<div class="settings-panel"><h4>💰 ต้นทุน</h4><div class="srow"><div class="sk">'+bagCount+' × '+sppr.toLocaleString()+' บาท</div><div class="sv amber">'+cost.toLocaleString()+' บาท</div></div><div class="srow"><div class="sk">ต่อไร่</div><div class="sv amber">'+fm(cost/area)+' บาท/ไร่</div></div></div>';
+  html+='<div class="tips-box"><h4>💡 คำแนะนำ</h4><div class="tip">'+(mg[mat]||'ทำ calibration ก่อนใช้งานเสมอ')+'</div><div class="tip">Calibration: เติม 2 กก. บิน 1 ไร่ ชั่งจริง ปรับ gate ให้ตรง</div><div class="tip">ความสูง 3–5 ม. กระจายสม่ำเสมอ สูงเกินไปไม่สม่ำเสมอในลม</div><div class="tip">ทับซ้อน (Overlap) 10–15% ขอบแปลงลดรอยช่องว่าง</div></div>';
+  html+='<button class="reset-btn" onclick="clearResult(\'spread-result\')">↺ ล้างผล</button>';
+  document.getElementById('spread-result').innerHTML=html;
+  document.getElementById('spread-result').scrollIntoView({behavior:'smooth',block:'start'});
+  // Show live log section with current settings
+  showLiveLog();
+}
+
+// -------- PLAN CALC --------
+function calcPlan(){
+  var d=DR[SEL],area=gN('pla'),bats=gN('plbat',3),chargeT=gN('plcharge',20),fillT=gN('plfill',5);
+  var task=gS('pltask'),start=gS('plstart')||'07:00';
+  if(!area){alert('กรุณากรอกขนาดแปลง');return;}
+  var flyPerBat=d.bat*0.85,dt=(chargeT/bats)+fillT;
+  var rpm=(d.eff_ha*HA2R)/60;
+  var sprayMin=task!=='spread'?area/rpm:0;
+  var spreadMin=task!=='spray'&&d.spr_kg>0?area/(rpm*0.9):0;
+  var workMin=task==='both'?sprayMin+spreadMin:Math.max(sprayMin,spreadMin);
+  var totalMin=workMin*1.15;
+  var pts=start.split(':');var cur=parseInt(pts[0])*60+parseInt(pts[1]);
+  var sched=[],rem=totalMin,rnd=1;
+  while(rem>0&&rnd<=60){
+    var fly=Math.min(flyPerBat,rem);var s=mt(cur);cur+=fly;var e=mt(cur);
+    sched.push({r:rnd,s:s,e:e,f:Math.round(fly)});
+    rem-=fly;if(rem>0)cur+=dt;rnd++;
+  }
+  var finish=mt(cur+15);
+  var rows=sched.map(function(x){return'<div class="pt-row"><div class="pt-n">'+x.r+'</div><div>'+x.s+' – '+x.e+'</div><div>'+x.f+' น.</div><div style="color:var(--text3);font-size:10px">บิน</div></div>';}).join('');
+  var html='<div class="result-header"><h3>📋 แผนการทำงาน — '+d.name+'</h3><div class="rsub">แปลง '+area+' ไร่ · เริ่ม '+start+' น.</div></div>';
+  html+='<div class="r4grid"><div class="rcard green"><div class="rlbl">เวลาบินรวม</div><div class="rnum">'+Math.round(workMin)+'</div><div class="runit">นาที</div></div>';
+  html+='<div class="rcard amber"><div class="rlbl">เวลาทั้งหมด</div><div class="rnum">'+fm(totalMin/60)+'</div><div class="runit">ชั่วโมง</div></div>';
+  html+='<div class="rcard blue"><div class="rlbl">รอบบิน</div><div class="rnum">'+sched.length+'</div><div class="runit">รอบ</div></div>';
+  html+='<div class="rcard"><div class="rlbl">คาดเสร็จ</div><div class="rnum" style="font-size:20px">'+finish+'</div><div class="runit">น.</div></div></div>';
+  html+='<div class="plan-table"><div class="pt-head"><div>รอบ</div><div>เวลา</div><div>นาที</div><div>หมายเหตุ</div></div>'+rows+'</div>';
+  html+='<div class="settings-panel"><h4>📋 สรุปทรัพยากร</h4><div class="srow"><div class="sk">แบตเตอรี่</div><div class="sv">'+bats+' ก้อน (สลับชาร์จ)</div></div><div class="srow"><div class="sk">Downtime/รอบ</div><div class="sv amber">'+Math.round(dt)+' นาที</div></div><div class="srow"><div class="sk">ประสิทธิภาพสุทธิ</div><div class="sv">'+fm(area/(totalMin/60),1)+' ไร่/ชม.</div></div></div>';
+  html+='<div class="tips-box"><h4>💡 เคล็ดลับ</h4><div class="tip">เตรียมน้ำ/สารล่วงหน้า วางจุดเติมกลางแปลง ลด Downtime</div><div class="tip">ชาร์จหลายก้อนพร้อมกันด้วย Generator ลดเวลารอ</div><div class="tip">Map แปลงล่วงหน้า 1–2 วัน ให้ระบบวางเส้นทางแม่นยำ</div><div class="tip">แปลง >50 ไร่ แบ่ง Zone 20–30 ไร่ ง่ายต่อการจัดการ</div></div>';
+  html+='<button class="reset-btn" onclick="clearResult(\'plan-result\')">↺ ล้างผล</button>';
+  document.getElementById('plan-result').innerHTML=html;
+  document.getElementById('plan-result').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// -------- HELPERS --------
+function sT(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+function sV(id,v){var e=document.getElementById(id);if(e)e.value=v;}
+function gN(id,fb){var v=parseFloat(document.getElementById(id)?document.getElementById(id).value:'');return isNaN(v)?(fb!==undefined?fb:0):v;}
+function gS(id){var e=document.getElementById(id);return e?e.value:'';}
+function fm(n,d){return(+n).toFixed(d!==undefined?d:1);}
+function mt(m){var h=Math.floor(m/60)%24,mn=Math.round(m%60);return(h<10?'0':'')+h+':'+(mn<10?'0':'')+mn;}
+function tog(a,b,aActive){document.getElementById(a).className='tog-btn'+(aActive?' active':'');document.getElementById(b).className='tog-btn'+(!aActive?' active':'');}
+function show(id){document.getElementById(id).style.display='';}
+function hide(id){document.getElementById(id).style.display='none';}
+function clearResult(id){document.getElementById(id).innerHTML='';}
+
+// -------- NAV --------
+var _navTabs=document.querySelectorAll('.nav-tab');
+var _pages=document.querySelectorAll('.page');
+for(var _ni=0;_ni<_navTabs.length;_ni++){
+  (function(b){
+    b.addEventListener('click',function(){
+      for(var _j=0;_j<_navTabs.length;_j++)_navTabs[_j].className='nav-tab';
+      b.className='nav-tab active';
+      var pg=b.dataset.page;SMODE=pg;
+      for(var _k=0;_k<_pages.length;_k++)_pages[_k].className='page';
+      document.getElementById('page-'+pg).className='page active';
+      window.scrollTo({top:0,behavior:'smooth'});
+    });
+  })(_navTabs[_ni]);
+}
+
+// -------- WIND SPEED --------
+function onSprayWindUnit() {
+  var raw = parseFloat(document.getElementById('swind_raw') ? document.getElementById('swind_raw').value : 0) || 0;
+  var unit = document.getElementById('swind_unit') ? document.getElementById('swind_unit').value : 'ms';
+  var ms = 0;
+  if (unit === 'ms')   ms = raw;
+  if (unit === 'mmin') ms = Math.round(raw / 60 * 100) / 100;
+  if (unit === 'kmh')  ms = Math.round(raw / 3.6 * 100) / 100;
+  var hidden = document.getElementById('swind');
+  if (hidden) hidden.value = ms;
+  var conv = document.getElementById('swind_converted');
+  if (conv) {
+    if (raw > 0 && unit !== 'ms') {
+      conv.textContent = raw + (unit==='mmin' ? ' ม./นาที' : ' กม./ชม.') + ' = ' + ms.toFixed(2) + ' ม./วิ';
+    } else {
+      conv.textContent = '';
+    }
+  }
+  onWindChange(ms);
+}
+
+function onWindChange(windOverride) {
+  var wind = (windOverride !== undefined) ? windOverride : (parseFloat(document.getElementById('swind') ? document.getElementById('swind').value : 0) || 0);
+  var indicator = document.getElementById('wind-indicator');
+  var dropletBox = document.getElementById('droplet-reco');
+
+  if (isNaN(wind) || wind < 0) {
+    indicator.style.display = 'none';
+    dropletBox.style.display = 'none';
+    return;
+  }
+
+  indicator.style.display = 'flex';
+  dropletBox.style.display = 'block';
+
+  var icon, cls, status, sub, dropletVal, dropletNote, height;
+
+  if (wind <= 2) {
+    icon = '😌'; cls = 'calm';
+    status = 'สภาพลมดีเยี่ยม (' + wind + ' ม./วิ)';
+    sub = 'เหมาะสำหรับพ่นทุกประเภทสาร';
+    dropletVal = 'Fine 50–150 μm';
+    dropletNote = 'หยดละเอียด — ลมน้อย หยดเล็กซึมใบได้ดีที่สุด เหมาะยาเชื้อรา ยาแมลง ปุ๋ยน้ำ ฮอร์โมน';
+    height = 'บินได้ตามค่าแนะนำปกติ';
+  } else if (wind <= 4) {
+    icon = '🌬️'; cls = 'calm';
+    status = 'ลมปานกลาง (' + wind + ' ม./วิ) — ใช้งานได้';
+    sub = 'เหมาะสำหรับสารทั่วไป ระวังการล่อง';
+    dropletVal = 'Medium 150–250 μm';
+    dropletNote = 'หยดกลาง — มาตรฐานทั่วไป สมดุลระหว่างการคลุมและการล่อง';
+    height = 'ลดความสูงลง 0.5 ม. จากค่าแนะนำ เพื่อลด drift';
+  } else if (wind <= 5) {
+    icon = '💨'; cls = 'normal';
+    status = 'ลมค่อนข้างแรง (' + wind + ' ม./วิ) — ระวัง';
+    sub = 'เสี่ยง drift สูง ควรใช้หยดใหญ่และลดความสูง';
+    dropletVal = 'Coarse 250–400 μm';
+    dropletNote = 'หยดหยาบ — ลดการล่อง (drift) ไม่แนะนำพ่นยาเชื้อรา/ฮอร์โมน ในสภาพนี้';
+    height = 'ลดความสูงเหลือ 1.5–2 ม. เท่านั้น';
+  } else if (wind <= 6) {
+    icon = '⚠️'; cls = 'strong';
+    status = 'ลมแรงเกินมาตรฐาน (' + wind + ' ม./วิ) — เสี่ยงมาก';
+    sub = 'DJI แนะนำหยุดบินที่ >5 ม./วิ สำหรับงานพ่นสาร';
+    dropletVal = 'Very Coarse >400 μm หรือหยุดงาน';
+    dropletNote = '⚠️ ถ้าจำเป็นต้องพ่น ใช้เฉพาะยาฆ่าหญ้า หยดหยาบสุด ลดความสูงเหลือ 1.5 ม. และลดความเร็วบิน';
+    height = 'ลดความสูงเหลือ 1.5 ม. บินช้าลง 2–3 ม./วิ';
+  } else {
+    icon = '🛑'; cls = 'stop';
+    status = 'หยุดบินทันที! ลม ' + wind + ' ม./วิ — อันตราย';
+    sub = 'สารจะล่องออกนอกแปลง เสี่ยงอันตรายต่อพืชข้างเคียงและผู้คน';
+    dropletVal = '🛑 ไม่แนะนำพ่นในสภาพนี้';
+    dropletNote = 'รอให้ลมลดลงต่ำกว่า 5 ม./วิ ก่อนเริ่มงานใหม่';
+    height = 'ห้ามบิน';
+  }
+
+  indicator.className = 'wind-indicator ' + cls;
+  document.getElementById('wind-icon').textContent = icon;
+  document.getElementById('wind-status').textContent = status;
+  document.getElementById('wind-sub').textContent = sub + ' | ' + height;
+  document.getElementById('droplet-reco-val').textContent = dropletVal;
+  document.getElementById('droplet-reco-note').textContent = dropletNote;
+
+  // Auto-set droplet in manual mode
+  var dropSel = document.getElementById('sdrop');
+  if (dropSel) {
+    if (wind <= 2) dropSel.value = 'fine';
+    else if (wind <= 4) dropSel.value = 'medium';
+    else dropSel.value = 'coarse';
+  }
+}
+
+// ===================================================
+// LIVE FLIGHT LOG (inside spread page)
+// ===================================================
+var liveRounds = [];
+var liveSetup = {totalArea:0, planRate:0, totalBags:0, bagWeight:50, totalMat:0};
+
+function showLiveLog() {
+  // Called after calcSpread() to show live log section
+  var el = document.getElementById('spread-live-log');
+  if (el) el.style.display = 'block';
+
+  // Get values from spread form
+  liveSetup.totalArea = gN('spa') || 0;
+  liveSetup.planRate = (SPREAD_M === 'bag') ?
+    (gN('spbags') * parseFloat(gS('spbagw')||'50') / (gN('spa')||1)) :
+    gN('sprate');
+  liveSetup.bagWeight = parseFloat(gS('spbagw') || '50');
+  liveSetup.totalBags = SPREAD_M === 'bag' ? gN('spbags') :
+    Math.ceil(gN('spa') * gN('sprate') / parseFloat(gS('spbagw')||'50'));
+  liveSetup.totalMat = liveSetup.totalBags * liveSetup.bagWeight;
+
+  // Reset rounds if new session
+  if (liveRounds.length === 0) {
+    addLiveRound();
+  }
+  updateLiveSummary();
+}
+
+function addLiveRound() {
+  var num = liveRounds.length + 1;
+  liveRounds.push({id: num, zone: '', wStart: 0, wEnd: 0, done: false});
+  renderLiveRounds();
+}
+
+function setLiveZone(id, zone) {
+  for (var i = 0; i < liveRounds.length; i++) {
+    if (liveRounds[i].id === id) {
+      liveRounds[i].zone = zone;
+      break;
+    }
+  }
+  renderLiveRounds();
+}
+
+function onLiveInput(id) {
+  var startEl = document.getElementById('lr' + id + '_start');
+  var endEl = document.getElementById('lr' + id + '_end');
+  for (var i = 0; i < liveRounds.length; i++) {
+    if (liveRounds[i].id === id) {
+      liveRounds[i].wStart = parseFloat(startEl ? startEl.value : 0) || 0;
+      liveRounds[i].wEnd = parseFloat(endEl ? endEl.value : 0) || 0;
+      liveRounds[i].done = liveRounds[i].wStart > 0 && liveRounds[i].wEnd >= 0;
+      break;
+    }
+  }
+  updateLiveRoundResult(id);
+  updateLiveSummary();
+}
+
+function updateLiveRoundResult(id) {
+  var r = null;
+  for (var i = 0; i < liveRounds.length; i++) {
+    if (liveRounds[i].id === id) { r = liveRounds[i]; break; }
+  }
+  if (!r) return;
+  var resultEl = document.getElementById('lrr-' + id);
+  if (!resultEl) return;
+
+  if (r.wStart > 0 && r.wStart > r.wEnd) {
+    var used = r.wStart - r.wEnd;
+    var planRate = liveSetup.planRate || 1;
+    var areaGot = used / planRate;
+    var rateActual = used / areaGot;
+    resultEl.className = 'lr-result show';
+    resultEl.innerHTML =
+      '<div><div class="lr-rv" style="color:var(--brand-deep)">' + used.toFixed(1) + '</div><div class="lr-rl">ใช้ไป (กก.)</div></div>' +
+      '<div><div class="lr-rv" style="color:var(--accent)">' + areaGot.toFixed(2) + '</div><div class="lr-rl">ได้ (ไร่)</div></div>' +
+      '<div><div class="lr-rv" style="color:var(--warn)">' + rateActual.toFixed(1) + '</div><div class="lr-rl">อัตราจริง กก./ไร่</div></div>';
+    // update card style
+    var card = document.getElementById('live-round-' + id);
+    if (card) card.className = 'live-round done ' + (r.zone === 'headland' ? 'headland-mode' : 'mainfield-mode');
+  } else {
+    resultEl.className = 'lr-result';
+  }
+}
+
+function getRPMForZone(zone) {
+  // Quick RPM lookup based on current spread settings
+  var mat = gS('spmat') || 'urea';
+  var mp = MAT_PROPS[mat] || MAT_PROPS.urea;
+  var droneName = SEL;
+  var dr = DRONE_RPM[droneName] || DRONE_RPM.T50;
+  var width = gN('spwid', 7);
+  var height = gN('spheight', 3);
+  var baseRPM = dr.std * (width / dr.swath_ref) * (dr.height_ref / height) + mp.rpm_adj;
+  var mainRPM = Math.round(baseRPM / 50) * 50;
+  mainRPM = Math.max(dr.min, Math.min(dr.max, mainRPM));
+  if (zone === 'headland') return Math.round(mainRPM * 0.65 / 50) * 50;
+  if (zone === 'corner') return Math.round(mainRPM * 0.50 / 50) * 50;
+  return mainRPM;
+}
+
+function renderLiveRounds() {
+  var container = document.getElementById('live-rounds-list');
+  if (!container) return;
+  var html = '';
+  for (var i = 0; i < liveRounds.length; i++) {
+    var r = liveRounds[i];
+    var isDone = r.wStart > 0 && r.wStart > r.wEnd;
+    var isActive = i === liveRounds.length - 1 && !isDone;
+    var numCls = isDone ? 'done' : isActive ? 'active' : 'pending';
+    var cardCls = 'live-round ' + (isDone ? 'done' : isActive ? 'active' : '') + ' ' +
+      (r.zone === 'headland' ? 'headland-mode' : r.zone === 'main' ? 'mainfield-mode' : '');
+
+    // RPM recommendations
+    var rpmMain = getRPMForZone('main');
+    var rpmHL = getRPMForZone('headland');
+
+    html += '<div class="live-round ' + (isDone ? 'done ' : isActive ? 'active ' : '') +
+      (r.zone === 'headland' ? 'headland-mode' : r.zone === 'main' ? 'mainfield-mode' : '') + '" id="live-round-' + r.id + '">';
+    html += '<div class="lr-header">';
+    html += '<div class="lr-num ' + numCls + '">' + r.id + '</div>';
+    html += '<div class="lr-title">รอบที่ ' + r.id + '</div>';
+
+    // Zone selector (only if not done)
+    if (!isDone) {
+      if (r.zone === '') {
+        // Show zone selector with smart suggestion based on previous round
+        var prevZone = i > 0 ? liveRounds[i-1].zone : '';
+        var suggestHL = prevZone === 'headland';
+        html += '<div style="display:flex;flex-direction:column;gap:6px;width:100%">';
+        if (i > 0) {
+          html += '<div style="font-size:10px;color:var(--text3);margin-bottom:2px">เลือกโซนสำหรับรอบนี้:</div>';
+        }
+        html += '<div style="display:flex;gap:6px">';
+        html += '<button onclick="setLiveZone(' + r.id + ',\'headland\')" style="flex:1;padding:8px 10px;border:2px solid '+(suggestHL?'var(--warn)':'var(--border)')+';background:'+(suggestHL?'var(--warn-light)':'var(--surface)')+';color:'+(suggestHL?'var(--warn)':'var(--text2)')+';border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--ff)">'+(suggestHL?'⭐ ':'')+'⚠️ เก็บขอบต่อ</button>';
+        html += '<button onclick="setLiveZone(' + r.id + ',\'main\')" style="flex:1;padding:8px 10px;border:2px solid '+(!suggestHL?'var(--brand)':'var(--border)')+';background:'+(!suggestHL?'var(--brand-light)':'var(--surface)')+';color:'+(!suggestHL?'var(--brand-deep)':'var(--text2)')+';border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--ff)">'+(!suggestHL?'⭐ ':'')+'✅ กลางแปลง</button>';
+        html += '</div>';
+        if (suggestHL) html += '<div style="font-size:10px;color:var(--warn);padding:3px 6px">รอบก่อนเก็บขอบ — ยังเก็บขอบไม่เสร็จ? กด "เก็บขอบต่อ"</div>';
+        else if (prevZone === 'main') html += '<div style="font-size:10px;color:var(--brand);padding:3px 6px">รอบก่อนวิ่งกลางแปลง — ต่อกลางแปลงต่อไป?</div>';
+        html += '</div>';
+      } else {
+        html += '<span class="lr-badge ' + (r.zone === 'headland' ? 'hl' : 'mf') + '">' +
+          (r.zone === 'headland' ? '⚠️ เก็บขอบ' : '✅ กลางแปลง') + '</span>';
+      }
+    } else {
+      html += '<span class="lr-badge done-b">✓ เสร็จแล้ว</span>';
+    }
+
+    // Delete last round button
+    if (liveRounds.length > 1 && i === liveRounds.length - 1 && !isDone) {
+      html += '<button onclick="delLastLiveRound()" style="padding:4px 8px;border:1px solid var(--danger-light);background:var(--danger-light);color:var(--danger);border-radius:5px;font-size:10px;cursor:pointer;font-family:var(--ff)">ลบ</button>';
+    }
+    html += '</div>';
+
+    // Show zone-based RPM recommendation
+    if (r.zone !== '') {
+      var rpm = r.zone === 'headland' ? rpmHL : rpmMain;
+      var augerBase2 = {urea:300,npk:280,rice_seed:250,rapeseed:200,lime:320,micro:250};
+      var auger2 = augerBase2[gS('spmat')||'urea'] || 300;
+      if (r.zone === 'headland') auger2 = Math.round(auger2 * 0.7);
+      html += '<div class="rpm-reco-inline">';
+      html += '🌀 <strong>RPM แนะนำ:</strong> จาน <strong>' + rpm + ' RPM</strong> | Auger <strong>' + auger2 + ' RPM</strong>';
+      if (r.zone === 'headland') html += ' | ⚠️ ลด RPM 35% ป้องกันหว่านออกนอกแปลง';
+      else html += ' | ✅ RPM เต็ม swath สม่ำเสมอ';
+      html += '</div>';
+    }
+
+    // Inputs (only show if zone selected)
+    if (r.zone !== '') {
+      html += '<div class="lr-inputs">';
+      html += '<div class="field"><label>น้ำหนักก่อนบิน <span class="lbl-unit">กก.</span></label>';
+      html += '<input type="number" id="lr' + r.id + '_start" placeholder="เช่น 45" min="0" step="0.1" value="' + (r.wStart || '') + '" onchange="onLiveInput(' + r.id + ')"/></div>';
+      html += '<div class="field"><label>น้ำหนักเมื่อลงจอด <span class="lbl-unit">กก.</span></label>';
+      html += '<input type="number" id="lr' + r.id + '_end" placeholder="เช่น 5" min="0" step="0.1" value="' + (r.wEnd || '') + '" onchange="onLiveInput(' + r.id + ')"/></div>';
+      html += '</div>';
+    }
+
+    // Result
+    html += '<div id="lrr-' + r.id + '" class="lr-result' + (isDone && r.wStart > r.wEnd ? ' show' : '') + '">';
+    if (isDone && r.wStart > r.wEnd) {
+      var used2 = r.wStart - r.wEnd;
+      var aGot = liveSetup.planRate > 0 ? used2 / liveSetup.planRate : 0;
+      html += '<div><div class="lr-rv" style="color:var(--brand-deep)">' + used2.toFixed(1) + '</div><div class="lr-rl">ใช้ไป (กก.)</div></div>';
+      html += '<div><div class="lr-rv" style="color:var(--accent)">' + aGot.toFixed(2) + '</div><div class="lr-rl">ได้ (ไร่)</div></div>';
+      html += '<div><div class="lr-rv" style="color:var(--warn)">' + (aGot>0?(used2/aGot).toFixed(1):'—') + '</div><div class="lr-rl">อัตราจริง กก./ไร่</div></div>';
+    }
+    html += '</div>';
+    html += '</div>';
+  }
+  container.innerHTML = html;
+}
+
+function updateLiveSummary() {
+  var totalUsed = 0, totalAreaDone = 0, roundsDone = 0;
+  var planRate = liveSetup.planRate || 1;
+  for (var i = 0; i < liveRounds.length; i++) {
+    var r = liveRounds[i];
+    if (r.wStart > 0 && r.wStart > r.wEnd) {
+      var used = r.wStart - r.wEnd;
+      totalUsed += used;
+      totalAreaDone += used / planRate;
+      roundsDone++;
+    }
+  }
+  var totalArea = liveSetup.totalArea || 0;
+  var totalMat = liveSetup.totalMat || 0;
+  var matRemain = totalMat - totalUsed;
+  var areaRemain = Math.max(0, totalArea - totalAreaDone);
+  var pct = totalArea > 0 ? Math.min(100, totalAreaDone / totalArea * 100) : 0;
+  var rateActual = totalAreaDone > 0 ? totalUsed / totalAreaDone : 0;
+
+  // Update progress bar
+  var pb = document.getElementById('log-progress-bar');
+  if (pb) pb.style.width = pct.toFixed(0) + '%';
+  var pt = document.getElementById('log-progress-text');
+  if (pt) pt.textContent = totalAreaDone.toFixed(1) + ' / ' + totalArea + ' ไร่';
+  var dr = document.getElementById('log-done-rai');
+  if (dr) dr.textContent = 'ทำแล้ว: ' + totalAreaDone.toFixed(1) + ' ไร่';
+  var rr = document.getElementById('log-remain-rai');
+  if (rr) rr.textContent = 'เหลือ: ' + areaRemain.toFixed(1) + ' ไร่';
+  var tr = document.getElementById('log-total-remain');
+  if (tr) tr.textContent = 'วัสดุเหลือ: ' + matRemain.toFixed(1) + ' กก.';
+
+  // Summary row
+  if (roundsDone > 0) {
+    var sr = document.getElementById('live-summary-row');
+    if (sr) sr.style.display = 'block';
+    var lu = document.getElementById('ls-used');
+    var ld = document.getElementById('ls-done');
+    var lrate = document.getElementById('ls-rate');
+    var lrm = document.getElementById('ls-remain-mat');
+    if (lu) lu.textContent = totalUsed.toFixed(1);
+    if (ld) ld.textContent = totalAreaDone.toFixed(2);
+    if (lrate) lrate.textContent = rateActual.toFixed(1);
+    if (lrm) lrm.textContent = matRemain.toFixed(1);
+    // Change color if running low
+    if (lrm) lrm.style.color = matRemain < planRate * 3 ? 'var(--danger)' : 'var(--brand-deep)';
+  }
+
+  // Update header remain
+  var hdr = document.getElementById('log-total-remain');
+  if (hdr) {
+    hdr.textContent = 'เหลือ: ' + matRemain.toFixed(1) + ' กก. (' + areaRemain.toFixed(1) + ' ไร่)';
+    hdr.style.color = matRemain < planRate * 2 ? 'var(--danger)' : 'var(--brand-deep)';
+  }
+}
+
+function delLastLiveRound() {
+  if (liveRounds.length <= 1) return;
+  liveRounds.pop();
+  renderLiveRounds();
+  updateLiveSummary();
+}
+
+function resetLiveLog() {
+  liveRounds = [];
+  var el = document.getElementById('spread-live-log');
+  if (el) el.style.display = 'none';
+}
+
+// ===================================================
+// RPM CALCULATOR — Based on DJI Official + Research
+// DJI T100 spec: 1100 RPM = 10m swath at 3m height
+// ScienceDirect 2024: auger 300 RPM + disc 1100 RPM at 4m = CV 12-20%
+// Ohio State: RPM difference > 10 between discs = non-uniform
+// Patent: headland = boundary then back-and-forth pattern
+// ===================================================
+var MAT_PROPS = {
+  urea:     {name:'ปุ๋ยยูเรีย',     density:0.75, size_mm:3.0, rpm_base:1000, rpm_adj:0,    auger:'M', breakage_risk:'ต่ำ',   note:'เม็ดกลมสม่ำเสมอ กระจายดี ลด RPM ถ้าเม็ดแตก'},
+  npk:      {name:'ปุ๋ย NPK',       density:0.90, size_mm:4.0, rpm_base:1000, rpm_adj:+50,  auger:'L', breakage_risk:'ปานกลาง',note:'เม็ดหนักกว่า เพิ่ม RPM เล็กน้อย ระวังเม็ดแตกที่ RPM สูง'},
+  rice_seed:{name:'เมล็ดข้าว',     density:0.58, size_mm:5.0, rpm_base:800,  rpm_adj:-100, auger:'M', breakage_risk:'สูง',    note:'เบาและยาว ใช้ RPM ต่ำกว่า ไม่งั้นเมล็ดกระเด็นไกลเกิน'},
+  rapeseed: {name:'เมล็ดพืชเล็ก',  density:0.65, size_mm:1.5, rpm_base:600,  rpm_adj:-200, auger:'S', breakage_risk:'สูงมาก', note:'เม็ดเล็กมาก RPM สูงเกินจะฟุ้งหายกับลม ใช้ความสูงต่ำ 2-3ม.'},
+  lime:     {name:'ปูนขาว',        density:0.90, size_mm:1.0, rpm_base:900,  rpm_adj:+50,  auger:'L', breakage_risk:'ต่ำ',   note:'ผงหนัก ระวังอุดตัน auger ล้างถังทันทีหลังใช้'},
+  micro:    {name:'ปุ๋ยอินทรีย์',   density:0.60, size_mm:3.0, rpm_base:800,  rpm_adj:-100, auger:'M', breakage_risk:'สูง',    note:'ความหนาแน่นต่ำ Calibrate ทุกครั้ง เม็ดแตกง่าย'}
+};
+
+// Drone-specific RPM ranges (from DJI specs)
+var DRONE_RPM = {
+  T20P:  {min:400,  max:1200, std:900,  swath_ref:7,  height_ref:3},
+  T25P:  {min:400,  max:1200, std:950,  swath_ref:8,  height_ref:3},
+  T30:   {min:400,  max:1200, std:1000, swath_ref:9,  height_ref:3},
+  T40:   {min:400,  max:1200, std:1000, swath_ref:7,  height_ref:3},
+  T50:   {min:400,  max:1200, std:1000, swath_ref:8,  height_ref:4},
+  T55:   {min:400,  max:1500, std:1000, swath_ref:10, height_ref:3},
+  T70P:  {min:400,  max:1500, std:1100, swath_ref:10, height_ref:3},
+  T100:  {min:400,  max:1500, std:1100, swath_ref:10, height_ref:3}
+};
+
+function calcRPM() {
+  var mat = document.getElementById('rpm_mat') ? document.getElementById('rpm_mat').value : 'urea';
+  var drone = document.getElementById('rpm_drone') ? document.getElementById('rpm_drone').value : 'T50';
+  var width = parseFloat(document.getElementById('rpm_width') ? document.getElementById('rpm_width').value : 7);
+  var height = parseFloat(document.getElementById('rpm_height') ? document.getElementById('rpm_height').value : 3);
+  var wind = parseFloat(document.getElementById('rpm_wind') ? document.getElementById('rpm_wind').value : 2) || 0;
+  var rate = parseFloat(document.getElementById('rpm_rate') ? document.getElementById('rpm_rate').value : 25) || 25;
+  var speed = parseFloat(document.getElementById('rpm_speed') ? document.getElementById('rpm_speed').value : 0) || (DRONE_RPM[drone]||{}).std_speed || 7;
+
+  var mp = MAT_PROPS[mat] || MAT_PROPS.urea;
+  var dr = DRONE_RPM[drone] || DRONE_RPM.T50;
+
+  // BASE RPM calculation (DJI Official Reference)
+  // DJI T40 Official: 1000 RPM at h=3m, speed=7m/s -> swath 7m (DJI Support Page)
+  // DJI T50/T100: 1100 RPM at h=3m -> swath 8-10m
+  // Combined formula: RPM = ref_rpm * (W_target/W_ref) * (H_ref/H_target)
+  // Speed effect: rotor vortex at higher speed pushes material wider (+0.3m per 1m/s above 7)
+  // So at higher speed, can reduce RPM slightly to maintain same swath
+
+  var speedRef = dr.spd || 7;
+  var speedFactor = 1.0;
+  // Higher speed = wider vortex = can reduce RPM by ~3% per 1m/s above ref
+  if (speed && speed > speedRef) speedFactor = Math.max(0.85, 1 - (speed - speedRef) * 0.03);
+  if (speed && speed < speedRef) speedFactor = Math.min(1.15, 1 + (speedRef - speed) * 0.03);
+
+  var baseRPM = dr.std * (width / dr.swath_ref) * (dr.height_ref / height) * speedFactor;
+  baseRPM = baseRPM + mp.rpm_adj;
+
+  // Wind correction: +50 RPM per 1 m/s above 2 m/s (field research)
+  // Rationale: wind pushes material inward on downwind side -> increase RPM to compensate
+  var windCorr = wind > 2 ? Math.round((wind - 2) * 50) : 0;
+
+  // Main field RPM
+  var mainRPM = Math.round(baseRPM / 50) * 50; // round to nearest 50
+  mainRPM = Math.max(dr.min, Math.min(dr.max, mainRPM + windCorr));
+
+  // Headland RPM: 30-40% lower (patent + field experience)
+  // At headland: slower drone, need narrower swath, prevent over-application at boundary
+  var headlandRPM = Math.round(mainRPM * 0.65 / 50) * 50;
+  headlandRPM = Math.max(dr.min, headlandRPM);
+
+  // Corner/turn RPM: even lower, drone decelerates
+  var cornerRPM = Math.round(mainRPM * 0.50 / 50) * 50;
+  cornerRPM = Math.max(dr.min, cornerRPM);
+
+  // Estimated actual swath at these RPMs (inverse of above formula)
+  var swathMain = dr.swath_ref * (mainRPM - windCorr - mp.rpm_adj) / dr.std * (height / dr.height_ref);
+  swathMain = Math.round(swathMain * 10) / 10;
+
+  var swathHL = dr.swath_ref * (headlandRPM - mp.rpm_adj) / dr.std * (height / dr.height_ref);
+  swathHL = Math.round(swathHL * 10) / 10;
+
+  // CV estimate (uniformity) based on research: base CV 15-20%, wind adds CV
+  var cvMain = 15 + (wind > 3 ? (wind-3)*5 : 0);
+  var cvHL = cvMain + 5; // headland always slightly less uniform due to turns
+
+  // Auger RPM recommendation (screw speed)
+  // Research: auger ~300 RPM is standard, adjust ±50 for material
+  var augerBase = {urea:300, npk:280, rice_seed:250, rapeseed:200, lime:320, micro:250};
+  var augerRPM = augerBase[mat] || 300;
+
+  // Route spacing recommendation
+  // Should be 80-90% of spread width for overlap (uniformity)
+  var routeSpacing = Math.round(swathMain * 0.85 * 10) / 10;
+  var routeSpacingHL = Math.round(swathMain * 0.5 * 10) / 10; // headland half width
+
+  // Calibration recommendation
+  var calLoad = Math.max(2, Math.round(rate * 0.1 * 10) / 10); // 10% of 1 rai dose min 2kg
+
+  var augerName = {S:'Small (เมล็ดเล็ก <2มม.)', M:'Medium (ยูเรีย/อินทรีย์)', L:'Large (NPK/ปูน)', XL:'Extra-Large (ข้าว/ข้าวสาลี)'};
+
+  var out = document.getElementById('rpm-output');
+  if (!out) return;
+
+  var html = '';
+
+  // Material info badge
+  html += '<div class="material-badge" style="background:var(--brand-light);color:var(--brand-deep)">';
+  html += '🌾 ' + mp.name + ' | Auger: ' + (augerName[mp.auger] || mp.auger) + ' | เสี่ยงแตก: ' + mp.breakage_risk;
+  html += '</div>';
+
+  // Main field zone
+  html += '<div class="rpm-zone main-field">';
+  html += '<h4 style="color:var(--brand-deep)">✅ กลางแปลง (Main Field) — บินตรง</h4>';
+  html += '<div class="rpm-grid">';
+  html += '<div class="rpm-val-box"><div class="rpm-big" style="color:var(--brand-deep)">' + mainRPM + '</div><div class="rpm-lbl">จาน RPM</div></div>';
+  html += '<div class="rpm-val-box"><div class="rpm-big" style="color:var(--accent)">' + augerRPM + '</div><div class="rpm-lbl">Auger RPM</div></div>';
+  html += '<div class="rpm-val-box"><div class="rpm-big" style="color:#7c3aed">' + routeSpacing + '</div><div class="rpm-lbl">Route Spacing (ม.)</div></div>';
+  html += '</div>';
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">';
+  html += '<div style="font-size:11px;color:var(--text2)">Swath จริง: <strong style="color:var(--brand-deep)">' + swathMain + ' ม.</strong></div>';
+  html += '<div style="font-size:11px;color:var(--text2)">CV คาดการณ์: <strong style="color:' + (cvMain < 20 ? 'var(--brand)' : 'var(--warn)') + '">' + cvMain.toFixed(0) + '%</strong> (ยอมรับ <30%)</div>';
+  html += '</div>';
+  html += '<div class="uniformity-bar" style="margin-top:8px"><div class="uniformity-fill" style="width:' + Math.min(100, (30-cvMain)/30*100) + '%;background:' + (cvMain < 20 ? 'var(--brand)' : 'var(--warn)') + '"></div></div>';
+  html += '<div style="font-size:10px;color:var(--text3);margin-top:3px">ความสม่ำเสมอ: ' + (cvMain < 15 ? 'ดีเยี่ยม' : cvMain < 20 ? 'ดี' : cvMain < 25 ? 'พอใช้' : '⚠️ ต่ำ — ลดลม/ความสูง') + '</div>';
+  html += '</div>';
+
+  // Headland zone
+  html += '<div class="rpm-zone headland">';
+  html += '<h4 style="color:#92400e">⚠️ ขอบแปลง (Headland) — วิ่งเก็บขอบ</h4>';
+  html += '<div class="rpm-grid">';
+  html += '<div class="rpm-val-box"><div class="rpm-big" style="color:#d97706">' + headlandRPM + '</div><div class="rpm-lbl">จาน RPM (ลด ' + Math.round((1-headlandRPM/mainRPM)*100) + '%)</div></div>';
+  html += '<div class="rpm-val-box"><div class="rpm-big" style="color:#d97706">' + Math.round(augerRPM * 0.7) + '</div><div class="rpm-lbl">Auger RPM</div></div>';
+  html += '<div class="rpm-val-box"><div class="rpm-big" style="color:#d97706">' + routeSpacingHL + '</div><div class="rpm-lbl">Half Width (ม.)</div></div>';
+  html += '</div>';
+  html += '<div class="rpm-note">';
+  html += '📌 <strong>ทำไมต้องลด RPM ขอบแปลง?</strong><br>';
+  html += '• โดรนบินช้าลงตอนเลี้ยว → วัสดุตกหนักขึ้นต่อจุด<br>';
+  html += '• swath ที่ขอบจะทับซ้อนกับนอกแปลง → สูญเสียและมลพิษ<br>';
+  html += '• แนะนำ: เปิด <strong>Headland Protection</strong> ใน Agras App (ถ้ามี)';
+  html += '</div>';
+  html += '</div>';
+
+  // Corner/turn zone
+  html += '<div class="rpm-zone" style="background:linear-gradient(135deg,#fdf2f8 0%,#fce7f3 100%);border-color:#f9a8d4">';
+  html += '<h4 style="color:#9d174d">🔄 หัวเลี้ยว (Corner/Turn)</h4>';
+  html += '<div class="rpm-grid">';
+  html += '<div class="rpm-val-box"><div class="rpm-big" style="color:#db2777">' + cornerRPM + '</div><div class="rpm-lbl">จาน RPM</div></div>';
+  html += '<div class="rpm-val-box"><div class="rpm-big" style="color:#db2777">0</div><div class="rpm-lbl">Auger RPM (ปิด)</div></div>';
+  html += '<div class="rpm-val-box"><div class="rpm-big" style="color:#db2777">2–3</div><div class="rpm-lbl">วินาทีก่อนปิด</div></div>';
+  html += '</div>';
+  html += '<div class="rpm-note">⚡ Rate controller ปรับช้า 2–3 วิ → ต้องสั่งปิด auger ก่อนถึงขอบ 2–3 วิ เพื่อป้องกันหว่านเกิน</div>';
+  html += '</div>';
+
+  // Wind adjustment
+  if (wind > 0) {
+    html += '<div class="rpm-zone wind-adj">';
+    html += '<h4 style="color:#1d4ed8">💨 ปรับตามลม ' + wind + ' ม./วิ</h4>';
+    if (wind <= 2) {
+      html += '<div class="rpm-note" style="background:rgba(255,255,255,.7)">✅ ลมน้อย สภาพดีเยี่ยม ใช้ค่า RPM ด้านบนได้เลย ไม่ต้องปรับ</div>';
+    } else if (wind <= 4) {
+      html += '<div class="rpm-note" style="background:rgba(255,255,255,.7)">🌬️ ลม ' + wind + ' ม./วิ — เพิ่ม +' + windCorr + ' RPM ชดเชย<br>ฝั่งใต้ลม: เพิ่ม ' + windCorr + ' RPM | ฝั่งเหนือลม: ลด ' + Math.round(windCorr*0.5) + ' RPM<br>หรือหมุนทิศทางบินให้บินขวางลม</div>';
+    } else {
+      html += '<div class="rpm-note" style="background:#fee2e2;color:#dc2626">⚠️ ลม ' + wind + ' ม./วิ เกินมาตรฐาน DJI (>5 ม./วิ = หยุดงาน)<br>ถ้าจำเป็น: เพิ่ม +' + windCorr + ' RPM ฝั่งใต้ลม ลด ความสูงเหลือ 2 ม. และลด route spacing ลง 1–2 ม.</div>';
+    }
+    html += '</div>';
+  }
+
+  // Calibration protocol
+  html += '<div class="settings-panel" style="margin-top:12px">';
+  html += '<h4>🧪 ขั้นตอน Calibration ก่อนบินจริง</h4>';
+  html += '<div class="srow"><div class="sk">1. วัสดุทดสอบ</div><div class="sv">' + calLoad + ' กก. ต่อการทดสอบ 1 ครั้ง</div></div>';
+  html += '<div class="srow"><div class="sk">2. ตั้ง Disc RPM</div><div class="sv amber">' + mainRPM + ' RPM ใน Agras App</div></div>';
+  html += '<div class="srow"><div class="sk">3. ตั้ง Auger RPM</div><div class="sv">' + augerRPM + ' RPM</div></div>';
+  html += '<div class="srow"><div class="sk">4. บินทดสอบ</div><div class="sv">1 ไร่ ที่ความสูง ' + height + ' ม. ความเร็ว ' + (DR[document.getElementById("rpm_drone").value]||{spd:7}).spd + ' ม./วิ</div></div>';
+  html += '<div class="srow"><div class="sk">5. ชั่งวัสดุที่เหลือ</div><div class="sv">คำนวณอัตราจริง = (เริ่ม - เหลือ) ÷ 1 ไร่</div></div>';
+  html += '<div class="srow"><div class="sk">6. เปรียบเทียบ</div><div class="sv">' + rate + ' กก./ไร่ (แผน) vs อัตราจริง</div></div>';
+  html += '<div class="srow"><div class="sk">7. ปรับ Auger RPM</div><div class="sv">จริง > แผน → ลด Auger / จริง < แผน → เพิ่ม Auger</div></div>';
+  html += '<div class="srow"><div class="sk">8. ตรวจ disc RPM สองจาน</div><div class="sv">ต้องต่างกัน &lt;10 RPM ใช้ tachometer วัด</div></div>';
+  html += '<div style="background:#fef3c7;border-radius:6px;padding:10px;font-size:11px;color:#78350f;margin-top:8px">';
+  html += '<strong>💡 ' + mp.name + ':</strong> ' + mp.note;
+  html += '</div></div>';
+
+  out.innerHTML = html;
+}
+
+// ===================================================
+// FLIGHT LOG SYSTEM
+// ===================================================
+var logRounds = [];
+var logHistory = [];
+
+function initLog() {
+  var d = new Date();
+  var ds = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  var el = document.getElementById('log_date');
+  if (el) el.value = ds;
+  loadLogHistory();
+  renderLogHistory();
+  addLogRound();
+}
+
+function addLogRound() {
+  var num = logRounds.length + 1;
+  logRounds.push({id: num, wStart: 0, wEnd: 0, area: 0, done: false});
+  renderLogRounds();
+}
+
+function delLogRound() {
+  if (logRounds.length <= 1) return;
+  logRounds.pop();
+  renderLogRounds();
+  updateLogSummary();
+}
+
+function renderLogRounds() {
+  var container = document.getElementById('log-rounds');
+  if (!container) return;
+  var logType = document.getElementById('log_type') ? document.getElementById('log_type').value : 'spread';
+  var unit = logType === 'spread' ? 'กก.' : 'ลิตร';
+  var html = '';
+  for (var i = 0; i < logRounds.length; i++) {
+    var r = logRounds[i];
+    var isDone = r.wStart > 0 && r.wEnd >= 0 && r.wStart > r.wEnd;
+    var used = isDone ? (r.wStart - r.wEnd) : 0;
+    var planRate = parseFloat(document.getElementById('log_plan_rate') ? document.getElementById('log_plan_rate').value : 0);
+    var areaCalc = (planRate > 0 && used > 0) ? (used / planRate) : 0;
+    var cls = isDone ? 'done' : (i === logRounds.length - 1 ? 'active-round' : '');
+    var numCls = isDone ? 'done-num' : (i === logRounds.length - 1 ? 'active-num' : '');
+    var statusTxt = isDone ? '<span id="round-status-' + r.id + '" class="round-status done-s">✓ เสร็จแล้ว</span>' : (i === logRounds.length - 1 ? '<span id="round-status-' + r.id + '" class="round-status flying">● กำลังบิน</span>' : '<span id="round-status-' + r.id + '" class="round-status pending">รอ</span>');
+
+    html += '<div class="round-card ' + cls + '" id="round-card-' + r.id + '">';
+    html += '<div class="round-header">';
+    html += '<div id="round-num-' + r.id + '" class="round-num ' + numCls + '">' + r.id + '</div>';
+    html += '<div class="round-title">รอบที่ ' + r.id + '</div>';
+    html += statusTxt;
+    if (logRounds.length > 1 && i === logRounds.length - 1) {
+      html += '<button class="del-round-btn" onclick="delLogRound()">ลบ</button>';
+    }
+    html += '</div>';
+
+    html += '<div class="round-inputs">';
+    html += '<div class="field"><label>น้ำหนักก่อนบิน <span class="lbl-unit">' + unit + '</span></label>';
+    html += '<input type="number" id="r' + r.id + '_start" placeholder="เช่น 45" min="0" step="0.1" value="' + (r.wStart || '') + '" onchange="onRoundInput(' + r.id + ')"/></div>';
+    html += '<div class="field"><label>น้ำหนักเมื่อลงจอด <span class="lbl-unit">' + unit + '</span></label>';
+    html += '<input type="number" id="r' + r.id + '_end" placeholder="เช่น 5" min="0" step="0.1" value="' + (r.wEnd || '') + '" onchange="onRoundInput(' + r.id + ')"/></div>';
+    // Gate recommendation
+    var matNow = document.getElementById('spmat') ? document.getElementById('spmat').value : 'urea';
+    var droneNow = SEL;
+    var gateMap = {urea:'gate ปานกลาง / feeder M',npk:'gate กว้าง / feeder L',rice_seed:'gate กว้างสุด / feeder XL',other_seed:'Calibrate ก่อน',lime:'gate กว้างมาก ระวังอุดตัน',micro:'gate กว้าง / ความหนาแน่นต่ำ'};
+    var gateReco = gateMap[matNow] || 'Calibrate ก่อนใช้';
+    html += '<div style="grid-column:span 3;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:8px 10px;font-size:11px;color:#15803d;margin-bottom:4px">';
+    html += '<strong>🔧 จานเปิดหว่านแนะนำ:</strong> ' + gateReco + ' | โดรน: ' + droneNow + ' (ถัง ' + DR[droneNow].spr_kg + ' กก.) | Calibrate: บินทดสอบ 1 ไร่ ชั่งจริงก่อนเสมอ</div>';
+    html += '<div class="field"><label>หมายเหตุ</label>';
+    html += '<input type="text" id="r' + r.id + '_note" placeholder="เช่น แบตหมด, ลมแรง" value="' + (r.note || '') + '"/></div>';
+    html += '</div>';
+
+    // Result for this round
+    if (isDone) {
+      var rateActual = areaCalc > 0 ? (used / areaCalc) : 0;
+      html += '<div class="round-result show" id="round-result-' + r.id + '">';
+      html += '<div class="rr-grid">';
+      html += '<div><div class="rr-val" style="color:var(--brand-deep)">' + used.toFixed(1) + '</div><div class="rr-lbl">ใช้ไป (' + unit + ')</div></div>';
+      html += '<div><div class="rr-val" style="color:var(--accent)">' + areaCalc.toFixed(1) + '</div><div class="rr-lbl">พื้นที่จริง (ไร่)</div></div>';
+      html += '<div><div class="rr-val" style="color:var(--warn)">' + rateActual.toFixed(2) + '</div><div class="rr-lbl">อัตราจริง (' + unit + '/ไร่)</div></div>';
+      html += '</div></div>';
+    }
+    html += '</div>';
+  }
+  container.innerHTML = html;
+}
+
+function onRoundInput(id) {
+  var startEl = document.getElementById('r' + id + '_start');
+  var endEl = document.getElementById('r' + id + '_end');
+  var noteEl = document.getElementById('r' + id + '_note');
+  for (var i = 0; i < logRounds.length; i++) {
+    if (logRounds[i].id === id) {
+      logRounds[i].wStart = parseFloat(startEl ? startEl.value : 0) || 0;
+      logRounds[i].wEnd = parseFloat(endEl ? endEl.value : 0) || 0;
+      logRounds[i].note = noteEl ? noteEl.value : '';
+      break;
+    }
+  }
+  // Update round result inline without full re-render
+  updateRoundResult(id);
+  updateLogSummary();
+}
+
+function updateRoundResult(id) {
+  var planRate = parseFloat(document.getElementById('log_plan_rate') ? document.getElementById('log_plan_rate').value : 0) || 0;
+  var logType = document.getElementById('log_type') ? document.getElementById('log_type').value : 'spread';
+  var unit = logType === 'spread' ? 'กก.' : 'ล.';
+  for (var i = 0; i < logRounds.length; i++) {
+    var r = logRounds[i];
+    if (r.id === id) {
+      var isDone = r.wStart > 0 && r.wStart > r.wEnd;
+      var resultEl = document.getElementById('round-result-' + id);
+      if (!resultEl) return;
+      if (isDone) {
+        var used = r.wStart - r.wEnd;
+        var areaCalc = planRate > 0 ? used / planRate : 0;
+        var rateActual = areaCalc > 0 ? used / areaCalc : 0;
+        resultEl.className = 'round-result show';
+        resultEl.innerHTML = '<div class="rr-grid">' +
+          '<div><div class="rr-val" style="color:var(--brand-deep)">' + used.toFixed(1) + '</div><div class="rr-lbl">ใช้ไป (' + unit + ')</div></div>' +
+          '<div><div class="rr-val" style="color:var(--accent)">' + areaCalc.toFixed(2) + '</div><div class="rr-lbl">พื้นที่จริง (ไร่)</div></div>' +
+          '<div><div class="rr-val" style="color:var(--warn)">' + rateActual.toFixed(2) + '</div><div class="rr-lbl">อัตราจริง (' + unit + '/ไร่)</div></div>' +
+          '</div>';
+        // Update status badge
+        var statusEl = document.getElementById('round-status-' + id);
+        if (statusEl) statusEl.innerHTML = '<span class="round-status done-s">✓ เสร็จแล้ว</span>';
+        var numEl = document.getElementById('round-num-' + id);
+        if (numEl) { numEl.className = 'round-num done-num'; }
+        var cardEl = document.getElementById('round-card-' + id);
+        if (cardEl) { cardEl.className = 'round-card done'; }
+      } else {
+        resultEl.className = 'round-result';
+      }
+      break;
+    }
+  }
+}
+
+function updateLogSummary() {
+  var totalArea = parseFloat(document.getElementById('log_total_area') ? document.getElementById('log_total_area').value : 0) || 0;
+  var planRate = parseFloat(document.getElementById('log_plan_rate') ? document.getElementById('log_plan_rate').value : 0) || 0;
+  var logType = document.getElementById('log_type') ? document.getElementById('log_type').value : 'spread';
+  var unit = logType === 'spread' ? 'กก.' : 'ล.';
+
+  var totalUsed = 0, totalAreaDone = 0, roundsDone = 0;
+  for (var i = 0; i < logRounds.length; i++) {
+    var r = logRounds[i];
+    if (r.wStart > 0 && r.wStart > r.wEnd) {
+      var used = r.wStart - r.wEnd;
+      totalUsed += used;
+      if (planRate > 0) totalAreaDone += used / planRate;
+      roundsDone++;
+    }
+  }
+
+  var summaryEl = document.getElementById('log-summary');
+  if (!summaryEl) return;
+  if (roundsDone === 0) { summaryEl.style.display = 'none'; return; }
+
+  summaryEl.style.display = 'block';
+  var areaRemain = totalArea > 0 ? Math.max(0, totalArea - totalAreaDone) : 0;
+  var actualRate = totalAreaDone > 0 ? totalUsed / totalAreaDone : 0;
+  var pctDone = totalArea > 0 ? Math.min(100, (totalAreaDone / totalArea * 100)) : 0;
+  var rateCompare = planRate > 0 && actualRate > 0 ? actualRate / planRate : 0;
+  var rateDiff = planRate > 0 ? ((actualRate - planRate) / planRate * 100) : 0;
+
+  var html = '<div class="summary-card">';
+  html += '<h3>📊 สรุปการบิน ' + roundsDone + ' รอบ</h3>';
+  html += '<div class="sum-grid">';
+  html += '<div class="sum-item"><div class="sum-num">' + totalUsed.toFixed(1) + '</div><div class="sum-lbl">ใช้ไปรวม (' + unit + ')</div></div>';
+  html += '<div class="sum-item"><div class="sum-num">' + totalAreaDone.toFixed(1) + '</div><div class="sum-lbl">ทำได้รวม (ไร่)</div></div>';
+  html += '<div class="sum-item"><div class="sum-num">' + pctDone.toFixed(0) + '%</div><div class="sum-lbl">ความคืบหน้า</div></div>';
+  html += '</div>';
+
+  html += '<div class="compare-bar">';
+  html += '<div class="cb-row"><div class="cb-key">อัตราที่วางแผน</div><div class="cb-val">' + planRate.toFixed(2) + ' ' + unit + '/ไร่</div></div>';
+  html += '<div class="cb-row"><div class="cb-key">อัตราจริงเฉลี่ย</div><div class="cb-val ' + (Math.abs(rateDiff) < 10 ? 'good' : 'warn') + '">' + actualRate.toFixed(2) + ' ' + unit + '/ไร่ (' + (rateDiff > 0 ? '+' : '') + rateDiff.toFixed(1) + '%)</div></div>';
+  if (totalArea > 0) {
+    html += '<div class="cb-row"><div class="cb-key">เหลืออีก</div><div class="cb-val ' + (areaRemain > 0 ? 'warn' : 'good') + '">' + areaRemain.toFixed(1) + ' ไร่</div></div>';
+    var matRemain = areaRemain * actualRate;
+    html += '<div class="cb-row"><div class="cb-key">วัสดุที่ต้องใช้ต่อ</div><div class="cb-val warn">' + matRemain.toFixed(1) + ' ' + unit + '</div></div>';
+  }
+  html += '</div></div>';
+
+  // Per-round breakdown table
+  html += '<div class="btbl" style="margin-bottom:10px"><div class="bhdr2">📋 ประวัติแต่ละรอบ</div>';
+  html += '<div style="display:grid;grid-template-columns:36px 1fr 1fr 1fr 1fr;padding:7px 14px;font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;background:var(--surface2);border-bottom:1px solid var(--border)">';
+  html += '<div>รอบ</div><div>เริ่ม</div><div>เหลือ</div><div>ใช้ (' + unit + ')</div><div>ได้ (ไร่)</div></div>';
+  for (var j = 0; j < logRounds.length; j++) {
+    var rr = logRounds[j];
+    if (rr.wStart > 0 && rr.wStart > rr.wEnd) {
+      var usedR = rr.wStart - rr.wEnd;
+      var areaR = planRate > 0 ? usedR / planRate : 0;
+      html += '<div style="display:grid;grid-template-columns:36px 1fr 1fr 1fr 1fr;padding:9px 14px;border-bottom:1px solid var(--surface2);font-size:12px">';
+      html += '<div style="font-family:var(--mono);font-weight:700;color:var(--brand)">' + rr.id + '</div>';
+      html += '<div>' + rr.wStart.toFixed(1) + '</div><div>' + rr.wEnd.toFixed(1) + '</div>';
+      html += '<div style="font-weight:700;color:var(--brand-deep)">' + usedR.toFixed(1) + '</div>';
+      html += '<div style="font-weight:700;color:var(--accent)">' + areaR.toFixed(2) + '</div>';
+      html += '</div>';
+    }
+  }
+  html += '</div>';
+  summaryEl.innerHTML = html;
+}
+
+function saveLogSession() {
+  var name = document.getElementById('log_name') ? document.getElementById('log_name').value : '';
+  var date = document.getElementById('log_date') ? document.getElementById('log_date').value : '';
+  var totalArea = document.getElementById('log_total_area') ? document.getElementById('log_total_area').value : '0';
+  var planRate = document.getElementById('log_plan_rate') ? document.getElementById('log_plan_rate').value : '0';
+  var logType = document.getElementById('log_type') ? document.getElementById('log_type').value : 'spread';
+  var material = document.getElementById('log_material') ? document.getElementById('log_material').value : '';
+
+  if (!name) { alert('กรุณาใส่ชื่องาน/แปลง'); return; }
+
+  var totalUsed = 0, totalAreaDone = 0, roundsDone = 0;
+  for (var i = 0; i < logRounds.length; i++) {
+    var r = logRounds[i];
+    if (r.wStart > 0 && r.wStart > r.wEnd) {
+      totalUsed += r.wStart - r.wEnd;
+      if (parseFloat(planRate) > 0) totalAreaDone += (r.wStart - r.wEnd) / parseFloat(planRate);
+      roundsDone++;
+    }
+  }
+
+  var session = {
+    id: Date.now(),
+    date: date, name: name, material: material, type: logType,
+    totalArea: parseFloat(totalArea), planRate: parseFloat(planRate),
+    totalUsed: totalUsed, totalAreaDone: totalAreaDone,
+    rounds: roundsDone, savedAt: new Date().toLocaleString('th-TH')
+  };
+
+  logHistory.unshift(session);
+  if (logHistory.length > 30) logHistory = logHistory.slice(0, 30);
+  try { localStorage.setItem('dji_log_history', JSON.stringify(logHistory)); } catch(e) {}
+  alert('บันทึกเซสชันแล้ว ✓');
+  renderLogHistory();
+}
+
+function loadLogHistory() {
+  try {
+    var saved = localStorage.getItem('dji_log_history');
+    if (saved) logHistory = JSON.parse(saved);
+  } catch(e) { logHistory = []; }
+}
+
+function renderLogHistory() {
+  var el = document.getElementById('log-history');
+  if (!el || logHistory.length === 0) { if(el) el.innerHTML = ''; return; }
+  var unit_map = {spread:'กก.',spray:'ล.'};
+  var html = '<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">ประวัติเซสชันที่บันทึกไว้</div>';
+  for (var i = 0; i < Math.min(logHistory.length, 10); i++) {
+    var s = logHistory[i];
+    var u = unit_map[s.type] || 'กก.';
+    var pct = s.totalArea > 0 ? Math.min(100,(s.totalAreaDone/s.totalArea*100)).toFixed(0) : '—';
+    html += '<div class="card" style="margin-bottom:8px;padding:12px">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">';
+    html += '<div><div style="font-size:13px;font-weight:700">' + s.name + '</div>';
+    html += '<div style="font-size:11px;color:var(--text3)">' + s.date + ' · ' + s.material + '</div></div>';
+    html += '<div style="text-align:right"><div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--brand)">' + pct + '%</div>';
+    html += '<div style="font-size:10px;color:var(--text3)">ความคืบหน้า</div></div></div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;font-size:11px;text-align:center">';
+    html += '<div><div style="font-weight:700">' + s.rounds + '</div><div style="color:var(--text3)">รอบ</div></div>';
+    html += '<div><div style="font-weight:700">' + s.totalUsed.toFixed(1) + '</div><div style="color:var(--text3)">ใช้ (' + u + ')</div></div>';
+    html += '<div><div style="font-weight:700">' + s.totalAreaDone.toFixed(1) + '</div><div style="color:var(--text3)">ได้ (ไร่)</div></div>';
+    html += '<div><div style="font-weight:700">' + s.totalArea + '</div><div style="color:var(--text3)">แผน (ไร่)</div></div>';
+    html += '</div></div>';
+  }
+  el.innerHTML = html;
+}
+
+function resetLog() {
+  if (!confirm('ล้างข้อมูลการบินทั้งหมด?')) return;
+  logRounds = [];
+  document.getElementById('log-rounds').innerHTML = '';
+  document.getElementById('log-summary').style.display = 'none';
+  var nameEl = document.getElementById('log_name');
+  var areaEl = document.getElementById('log_total_area');
+  var rateEl = document.getElementById('log_plan_rate');
+  var matEl = document.getElementById('log_material');
+  if(nameEl) nameEl.value = '';
+  if(areaEl) areaEl.value = '';
+  if(rateEl) rateEl.value = '';
+  if(matEl) matEl.value = '';
+  addLogRound();
+}
+
+// -------- INIT --------
+// ===================================================
+// SPREAD CROP STAGE DATA
+// Ref: DJI Official, กรมการข้าว 2564, Ohio State UAV Spreading Guide 2023
+// ===================================================
+var SP_CROP_STAGES = {
+  rice: [
+    {id:'seedling_sp',  lbl:'ระยะกล้า/งอก',           days:'0–14 วัน',
+     crop_h:0.1, fly_h:3.0, spd:6, swath:7,
+     note:'ข้าวสูง 5–15 ซม. บิน 3 ม. เหนือพื้น (ไม่ใช่เหนือต้น) vortex downwash ห้ามเกิน 2 ม./วิ ที่ canopy',
+     warn:'⚠️ อันตรายสูง! ต้นอ่อนมาก vortex แรงเกินจะล้มทั้งแปลง ลดความเร็วเหลือ 4–5 ม./วิ'},
+    {id:'early_sp',     lbl:'ระยะแตกกอ ต้น',           days:'15–30 วัน',
+     crop_h:0.2, fly_h:3.0, spd:7, swath:7,
+     note:'ข้าวสูง 15–25 ซม. บิน 3 ม. เหนือพื้น swath 7 ม. ปกติ',
+     warn:'⚠️ ระวัง! แรงลมใต้โดรน (Vortex) ยังรุนแรงพอทำให้ข้าวล้มได้ — ห้ามบินเร็วเกิน 7 ม./วิ ในระยะนี้'},
+    {id:'mid_tiller_sp',lbl:'ระยะแตกกอ กลาง–ปลาย',    days:'31–50 วัน',
+     crop_h:0.4, fly_h:3.5, spd:8, swath:8,
+     note:'ข้าวสูง 30–50 ซม. บิน 3.5 ม. เหนือพื้น เพิ่มความสูงตามต้นที่สูงขึ้น',
+     warn:null},
+    {id:'panicle_sp',   lbl:'ระยะตั้งท้อง',            days:'51–75 วัน',
+     crop_h:0.7, fly_h:4.0, spd:9, swath:9,
+     note:'ข้าวสูง 60–80 ซม. บิน 4 ม. เหนือพื้น ความสูงจากยอดข้าว ~3 ม. ปลอดภัย',
+     warn:null},
+    {id:'heading_sp',   lbl:'ระยะออกรวง',              days:'76–95 วัน',
+     crop_h:0.9, fly_h:4.5, spd:9, swath:10,
+     note:'ข้าวสูง 80–100 ซม. บิน 4.5 ม. เหนือพื้น ระยะนี้มักหว่านน้อย',
+     warn:null}
+  ],
+  sugarcane: [
+    {id:'cane_young',   lbl:'อ้อยอายุน้อย',             days:'0–90 วัน',
+     crop_h:0.3, fly_h:3.0, spd:7, swath:8,
+     note:'อ้อยสูง <50 ซม. บิน 3 ม. ได้ปกติ',warn:null},
+    {id:'cane_mid',     lbl:'อ้อยกลาง–สูง',             days:'90–240 วัน',
+     crop_h:1.5, fly_h:5.0, spd:8, swath:9,
+     note:'อ้อยสูง 1–2 ม. บิน 5 ม. เหนือพื้น ต้องบินสูงตามต้น',
+     warn:'⚠️ อ้อยสูง — ต้องบิน 3–4 ม. เหนือยอดอ้อย ไม่ใช่เหนือพื้น'},
+    {id:'cane_tall',    lbl:'อ้อยสูง ใกล้ตัด',          days:'240–330 วัน',
+     crop_h:2.5, fly_h:6.0, spd:8, swath:10,
+     note:'อ้อยสูง 2–3 ม. ต้องบิน 6 ม. ขึ้นไป ระวังมาก',
+     warn:'⚠️ อ้อยสูงมาก! ต้องบิน 3 ม. เหนือยอดอ้อยขั้นต่ำ'}
+  ],
+  corn: [
+    {id:'corn_v1',      lbl:'ข้าวโพด V1–V4',           days:'0–21 วัน',
+     crop_h:0.2, fly_h:3.0, spd:6, swath:7,
+     note:'ข้าวโพดสูง <30 ซม. บิน 3 ม.',
+     warn:'⚠️ ต้นอ่อน ระวัง vortex ลดความเร็วเหลือ 5–6 ม./วิ'},
+    {id:'corn_v8',      lbl:'ข้าวโพด V5–VT',           days:'22–60 วัน',
+     crop_h:1.0, fly_h:4.5, spd:8, swath:9,
+     note:'ข้าวโพดสูง 50–150 ซม. บิน 4.5 ม. เหนือพื้น',warn:null},
+    {id:'corn_tassel',  lbl:'ข้าวโพดออกดอก',           days:'61–90 วัน',
+     crop_h:1.8, fly_h:5.0, spd:8, swath:10,
+     note:'ข้าวโพดสูง 150–200 ซม. ต้องบิน 3 ม. เหนือยอด',warn:null}
+  ],
+  cassava: [
+    {id:'cas_young',    lbl:'มันสำปะหลังอ่อน',         days:'0–60 วัน',
+     crop_h:0.3, fly_h:3.0, spd:7, swath:8,note:'',warn:null},
+    {id:'cas_mid',      lbl:'มันสำปะหลังกลาง',         days:'60–180 วัน',
+     crop_h:1.0, fly_h:4.5, spd:8, swath:9,
+     note:'มันสูง ~1 ม. บิน 4.5 ม. เหนือพื้น',warn:null},
+    {id:'cas_tall',     lbl:'มันสำปะหลังสูง',           days:'180+ วัน',
+     crop_h:2.0, fly_h:5.5, spd:8, swath:10,
+     note:'มันสูง 1.5–2.5 ม. ต้องบิน 3 ม. เหนือยอด',warn:null}
+  ],
+  other: [
+    {id:'oth_short',    lbl:'พืชเตี้ย <50 ซม.',        days:'—',
+     crop_h:0.3, fly_h:3.0, spd:7, swath:7,note:'บิน 3 ม. ปกติ',warn:null},
+    {id:'oth_med',      lbl:'พืชกลาง 50–150 ซม.',      days:'—',
+     crop_h:1.0, fly_h:4.5, spd:8, swath:9,
+     note:'บิน 4.5 ม. เหนือพื้น (3 ม. เหนือยอด)',warn:null},
+    {id:'oth_tall',     lbl:'พืชสูง >150 ซม.',          days:'—',
+     crop_h:2.0, fly_h:5.5, spd:8, swath:10,
+     note:'บิน 5.5 ม. หรือ 3 ม. เหนือยอดพืช',warn:null}
+  ]
+};
+
+var SP_DAY_MAP = {
+  rice:     {seedling_sp:14, early_sp:30, mid_tiller_sp:50, panicle_sp:75, heading_sp:999},
+  sugarcane:{cane_young:90,  cane_mid:240, cane_tall:999},
+  corn:     {corn_v1:21,     corn_v8:60,   corn_tassel:999},
+  cassava:  {cas_young:60,   cas_mid:180,  cas_tall:999}
+};
+
+function onSpCropChange() {
+  var crop = document.getElementById('sp_crop') ? document.getElementById('sp_crop').value : 'rice';
+  var stages = SP_CROP_STAGES[crop] || [];
+  var sel = document.getElementById('sp_stage');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— เลือกระยะ —</option>';
+  for (var i = 0; i < stages.length; i++) {
+    var o = document.createElement('option');
+    o.value = stages[i].id;
+    o.textContent = stages[i].lbl + ' (' + stages[i].days + ')';
+    sel.appendChild(o);
+  }
+  var dh = document.getElementById('sp_days_hint');
+  if (dh) dh.textContent = 'กรอกอายุเพื่อให้ระบบแนะนำระยะอัตโนมัติ';
+  updateSpHeightReco();
+  calcIntegratedSpread();
+}
+
+function onSpDaysChange() {
+  var days = parseFloat(document.getElementById('sp_days') ? document.getElementById('sp_days').value : 0) || 0;
+  if (!days) return;
+  var crop = document.getElementById('sp_crop') ? document.getElementById('sp_crop').value : 'rice';
+  var map = SP_DAY_MAP[crop];
+  if (!map) return;
+  var ids = Object.keys(map);
+  var best = ids[ids.length-1];
+  for (var i = 0; i < ids.length; i++) {
+    if (days <= map[ids[i]]) { best = ids[i]; break; }
+  }
+  var sel = document.getElementById('sp_stage');
+  if (sel) sel.value = best;
+  var dh = document.getElementById('sp_days_hint');
+  if (dh) dh.textContent = 'อายุ ' + Math.round(days) + ' วัน → เลือกระยะอัตโนมัติแล้ว ✓';
+  updateSpHeightReco();
+  calcIntegratedSpread();
+}
+
+function onSpStageChange() { updateSpHeightReco(); calcIntegratedSpread(); }
+
+function updateSpHeightReco() {
+  var crop = document.getElementById('sp_crop') ? document.getElementById('sp_crop').value : 'rice';
+  var stageId = document.getElementById('sp_stage') ? document.getElementById('sp_stage').value : '';
+  var reco = document.getElementById('sp_height_reco');
+  if (!stageId || !reco) { if(reco) reco.style.display='none'; return; }
+
+  var stages = SP_CROP_STAGES[crop] || [];
+  var st = null;
+  for (var i = 0; i < stages.length; i++) {
+    if (stages[i].id === stageId) { st = stages[i]; break; }
+  }
+  if (!st) { reco.style.display='none'; return; }
+
+  reco.style.display = 'block';
+
+  // Update recommended values
+  var wind = parseFloat(document.getElementById('spwind') ? document.getElementById('spwind').value : 0) || 0;
+  var flyH = st.fly_h;
+  // Wind adjustment for height: stronger wind = need to fly lower to maintain swath accuracy
+  if (wind > 4) flyH = Math.max(3.0, flyH - 0.5);
+
+  var rh = document.getElementById('sp_reco_h');
+  var rs = document.getElementById('sp_reco_spd');
+  var rw = document.getElementById('sp_reco_wid');
+  var rn = document.getElementById('sp_reco_note');
+  var rwr = document.getElementById('sp_reco_warn');
+
+  if (rh) rh.textContent = flyH.toFixed(1);
+  if (rs) rs.textContent = st.spd;
+  if (rw) rw.textContent = st.swath;
+
+  // Build note
+  var note = st.note;
+  if (st.crop_h > 0) {
+    note = '🌾 ต้นพืชสูง ~' + (st.crop_h*100).toFixed(0) + ' ซม. | บิน ' + flyH.toFixed(1) + ' ม. เหนือพื้น = ห่างยอดพืช ~' + ((flyH-st.crop_h).toFixed(1)) + ' ม. | ' + note;
+  }
+  if (rn) rn.textContent = note;
+
+  if (rwr) {
+    if (st.warn) {
+      rwr.textContent = st.warn;
+      rwr.style.display = 'block';
+    } else {
+      rwr.style.display = 'none';
+    }
+  }
+
+  // Auto-fill height in spread form
+  var spH = document.getElementById('spheight');
+  if (spH) {
+    // Set numeric input directly
+    spH.value = flyH.toFixed(1);
+  }
+
+  // Auto-fill speed
+  var spSpd = document.getElementById('spspd');
+  if (spSpd) spSpd.value = st.spd;
+}
+
+function onSpreadWindUnit() {
+  var raw = parseFloat(document.getElementById('spwind_raw') ? document.getElementById('spwind_raw').value : 0) || 0;
+  var unit = document.getElementById('spwind_unit') ? document.getElementById('spwind_unit').value : 'ms';
+  var ms = 0;
+  if (unit === 'ms')   ms = raw;
+  if (unit === 'mmin') ms = Math.round(raw / 60 * 100) / 100;
+  if (unit === 'kmh')  ms = Math.round(raw / 3.6 * 100) / 100;
+  // Set hidden input
+  var hidden = document.getElementById('spwind');
+  if (hidden) hidden.value = ms;
+  // Show conversion text
+  var conv = document.getElementById('spwind_converted');
+  if (conv) {
+    if (raw > 0 && unit !== 'ms') {
+      conv.textContent = raw + (unit==='mmin'?' ม./นาที':' กม./ชม.') + ' = ' + ms.toFixed(2) + ' ม./วิ';
+      conv.style.display = 'block';
+    } else {
+      conv.textContent = '';
+      conv.style.display = 'none';
+    }
+  }
+  // Call with explicit wind value to avoid timing issue
+  calcIntegratedSpread(ms);
+}
+
+function onSpreadWind() { calcIntegratedSpread(); }
+function onSpreadWindManual() { calcIntegratedSpread(); }
+
+// ===================================================
+// INTEGRATED SPREAD CALCULATOR
+// All variables interact: wind <-> RPM <-> height <-> speed <-> swath <-> spacing
+// Reference:
+//   DJI T100 Official: 1100 RPM @ h=3m -> swath=10m, CV<30%
+//   DJI T40 Official:  1000 RPM @ h=3m, speed=7m/s -> swath=7m
+//   DJI: "faster disc + higher altitude = wider swath"
+//   Research (ScienceDirect 2024): wind >4m/s = CV>35% (unacceptable)
+//   Research (Atmos.Meas.Tech 2025): rotor downwash correction needed at wind>3m/s
+// ===================================================
+function calcIntegratedSpread(windOverride) {
+  var wind = (windOverride !== undefined) ? windOverride : (parseFloat(document.getElementById('spwind') ? document.getElementById('spwind').value : 0) || 0);
+  var mat = gS('spmat') || 'urea';
+  var widthTarget = gN('spwid', 7);
+  var heightInput = gN('spheight', 3);
+  var speedInput = gN('spspd', DR[SEL] ? DR[SEL].spd : 7);
+  var mp = MAT_PROPS[mat] || MAT_PROPS.urea;
+  var dr = DRONE_RPM[SEL] || DRONE_RPM.T50;
+
+  // ===== STEP 1: Adjust height based on wind =====
+  // Higher wind -> fly lower to maintain swath accuracy (DJI field guide)
+  var heightAdj = heightInput;
+  if (wind > 4) heightAdj = Math.max(2.0, heightInput - 1.0);
+  else if (wind > 3) heightAdj = Math.max(2.5, heightInput - 0.5);
+  else if (wind > 2) heightAdj = Math.max(2.5, heightInput - 0.0); // no change but warn
+
+  // ===== STEP 2: Adjust speed based on wind =====
+  // Slower speed -> more material per unit area -> more even distribution in wind
+  var speedAdj = speedInput;
+  if (wind > 4) speedAdj = Math.max(5, speedInput - 2);
+  else if (wind > 3) speedAdj = Math.max(6, speedInput - 1);
+
+  // ===== STEP 3: Calculate RPM =====
+  // DJI T40 ref: 1000 RPM @ h=3m, speed=7m/s -> swath=7m
+  // DJI T100 ref: 1100 RPM @ h=3m -> swath=10m
+  // Formula: RPM = ref_rpm * (W_target/W_ref) * (H_ref/H_adj)
+  // Speed factor: higher speed = rotor vortex wider = can use lower RPM (3% per 1m/s)
+  var speedFactor = 1.0;
+  var speedRef = dr.spd || 7;
+  if (speedAdj > speedRef) speedFactor = Math.max(0.85, 1 - (speedAdj - speedRef) * 0.03);
+  if (speedAdj < speedRef) speedFactor = Math.min(1.15, 1 + (speedRef - speedAdj) * 0.03);
+
+  var baseRPM = dr.std * (widthTarget / dr.swath_ref) * (dr.height_ref / heightAdj) * speedFactor + mp.rpm_adj;
+
+  // Wind correction: +50 RPM per 1 m/s above 2 m/s
+  var windRPMCorr = wind > 2 ? Math.round((wind - 2) * 50) : 0;
+  var mainRPM = Math.round((baseRPM + windRPMCorr) / 50) * 50;
+  mainRPM = Math.max(dr.min, Math.min(dr.max, mainRPM));
+  var headlandRPM = Math.round(mainRPM * 0.65 / 50) * 50;
+
+  // ===== STEP 4: Adjust route spacing =====
+  // Standard: 85% of swath. Wind reduces effective swath
+  var swathEff = widthTarget;
+  if (wind > 2) swathEff = Math.max(4, widthTarget - (wind - 2) * 0.5);
+  var routeSpacing = Math.round(swathEff * 0.85 * 10) / 10;
+
+  // ===== STEP 5: CV estimate (uniformity) =====
+  // Base CV from research: 15% at ideal. Wind adds CV
+  var cvEst = 15 + Math.max(0, (wind - 2) * 5);
+
+  // ===== UPDATE FORM FIELDS =====
+  // Auto-update height dropdown to closest value
+  var spH = document.getElementById('spheight');
+  if (spH) spH.value = heightAdj.toFixed(1);
+  // Auto-update speed
+  var spSpd = document.getElementById('spspd');
+  if (spSpd && wind > 0) spSpd.value = speedAdj;
+
+  // ===== UPDATE INDICATOR =====
+  var ind = document.getElementById('spwind-indicator');
+  if (!ind) return;
+  if (wind <= 0) { ind.style.display = 'none'; return; }
+  ind.style.display = 'block';
+
+  var canFly = wind <= 5;
+  var bg, border, color;
+  if (wind <= 2)      { bg='#f0fdf4'; border='#86efac'; color='#15803d'; }
+  else if (wind <= 3) { bg='#fefce8'; border='#fde047'; color='#854d0e'; }
+  else if (wind <= 4) { bg='#fef3c7'; border='#fbbf24'; color='#92400e'; }
+  else if (wind <= 5) { bg='#ffedd5'; border='#fb923c'; color='#9a3412'; }
+  else                { bg='#fee2e2'; border='#f87171'; color='#dc2626'; }
+
+  ind.style.background = bg;
+  ind.style.border = '1.5px solid ' + border;
+  ind.style.color = color;
+  ind.style.borderRadius = '8px';
+  ind.style.padding = '12px 14px';
+
+  var statusIcon, statusText;
+  if (wind <= 2)      { statusIcon='😌'; statusText='ดีเยี่ยม ✅ บินได้เลย'; }
+  else if (wind <= 3) { statusIcon='🌬️'; statusText='ปานกลาง ✅ บินได้ ต้องปรับค่า'; }
+  else if (wind <= 4) { statusIcon='💨'; statusText='แรง ⚠️ บินได้แต่ระวัง'; }
+  else if (wind <= 5) { statusIcon='⚠️'; statusText='แรงมาก 🔴 ไม่แนะนำ'; }
+  else                { statusIcon='🛑'; statusText='อันตราย ⛔ หยุดงานทันที'; }
+
+  var html = '';
+  html += '<div style="font-size:13px;font-weight:800;margin-bottom:10px">' + statusIcon + ' ลม ' + wind + ' ม./วิ — ' + statusText + '</div>';
+
+  if (canFly) {
+    html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px">';
+    html += '<div style="background:rgba(255,255,255,.7);border-radius:6px;padding:8px;text-align:center"><div style="font-family:var(--mono);font-size:17px;font-weight:700">' + mainRPM + '</div><div style="font-size:9px;margin-top:2px">รอบจานหว่าน — กลางแปลง</div></div>';
+    html += '<div style="background:rgba(255,255,255,.7);border-radius:6px;padding:8px;text-align:center"><div style="font-family:var(--mono);font-size:17px;font-weight:700">' + headlandRPM + '</div><div style="font-size:9px;margin-top:2px">รอบจานหว่าน — ขอบแปลง</div></div>';
+    html += '<div style="background:rgba(255,255,255,.7);border-radius:6px;padding:8px;text-align:center"><div style="font-family:var(--mono);font-size:17px;font-weight:700">' + heightAdj.toFixed(1) + ' ม.</div><div style="font-size:9px;margin-top:2px">ความสูงบิน' + (heightAdj < heightInput ? ' (ปรับลด)' : '') + '</div></div>';
+    html += '<div style="background:rgba(255,255,255,.7);border-radius:6px;padding:8px;text-align:center"><div style="font-family:var(--mono);font-size:17px;font-weight:700">' + routeSpacing.toFixed(1) + ' ม.</div><div style="font-size:9px;margin-top:2px">ระยะห่างแนวบิน</div></div>';
+    html += '</div>';
+    html += '<div style="font-size:11px;line-height:1.8">';
+    html += '• ความเร็วบิน: <strong>' + speedAdj + ' ม./วิ</strong>' + (speedAdj < speedInput ? ' (ลดจาก ' + speedInput + ')' : '') + '<br>';
+    html += '• ทิศทางบิน: <strong>' + (wind > 2 ? 'บินขวางลม 90°' : 'ทิศทางปกติ') + '</strong><br>';
+    html += '• ความสม่ำเสมอการกระจาย: <strong style="color:' + (cvEst < 20 ? '#15803d' : cvEst < 30 ? '#92400e' : '#dc2626') + '">' + cvEst.toFixed(0) + '%</strong> ' + (cvEst < 20 ? '✅ ดีมาก' : cvEst < 30 ? '⚠️ พอใช้ได้' : '🔴 ไม่สม่ำเสมอ') + ' (มาตรฐาน DJI < 30%)<br>';
+    if (wind > 3) html += '• ⚡ <strong>ทำ Calibration ใหม่</strong> ที่ความเร็วลมนี้ก่อนบินจริง<br>';
+    if (wind > 2) html += '• การเบี่ยงของเม็ดปุ๋ย: ~' + fm((wind - 2) * 0.3, 1) + ' ม. จากแนวบิน';
+    html += '</div>';
+    html += '<div style="font-size:10px;margin-top:8px;opacity:.7;color:var(--text2)">📚 อ้างอิง: DJI T40/T100 Official Spec + งานวิจัย ScienceDirect 2024 + Atmos.Meas.Tech 2025</div>';
+  } else {
+    html += '<div style="font-size:11px;line-height:1.8">';
+    html += '• เม็ดปุ๋ยจะกระเด็นออกนอกแปลง 2–5 ม.<br>';
+    html += '• CV > 50% — ปุ๋ยกระจายไม่สม่ำเสมออย่างรุนแรง<br>';
+    html += '• ⛔ <strong>ห้ามบิน</strong> รอลมลดต่ำกว่า 4 ม./วิ ก่อน';
+    html += '</div>';
+  }
+  ind.innerHTML = html;
+  updateSpHeightReco();
+}
+
+buildGrid();selectModel('T30');onCropChange();onSpMat();initLog();onSpCropChange();
+// Init RPM on spread page shown
+calcRPM();
+</script>
+</body>
+</html>
